@@ -1,3 +1,6 @@
+//Always use getchar() inbetween using scanf() for decimal/floating point values and calling getString()
+//Residual '\n' is not consumed by scanf()
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -58,7 +61,6 @@ char * getString()
   char * string = NULL, * aux = NULL;
   char buffer_char;
   unsigned length = 0;
-  getchar();
 
   while((buffer_char = getchar()) != '\n')
   {
@@ -77,7 +79,6 @@ char * getString()
   {
     *(string + length) = '\0';
   }
-  ungetc('\n', stdin);
   return string;
 
 
@@ -93,6 +94,9 @@ void getVehicleData(Vehicle ** garage, const unsigned * vehicle_number)
   printf("Enter the engine type: ");
   scanf("%hhd", &placeholder);
   garage [*vehicle_number]->eng = (EngineType)placeholder;
+
+  //necessary for scanf() to work
+  getchar();
 
   printf("Enter the vehicle's manufacturer name: ");
   if((garage [*vehicle_number]->brand = getString()) == NULL)
