@@ -5,7 +5,7 @@ typedef enum {True, False} bool;
 typedef enum {Gasoline, Diesel, Electric} EngineType;
 typedef enum {Personal, Freight, Special} VehicleType;
 
-unsigned malloc_counter = 0;
+unsigned malloc_counter;
 
 typedef struct
 {
