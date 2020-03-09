@@ -121,9 +121,10 @@ int parseRVal(Variable * var, char * string)
   //Now we have the address where the rvalue should start, we start working on inferring a type
   if (strchr(separators, *goto_rval))
   {
-
     return 0; //Invalid input
   }
+
+  // Detected " - might be string, checking...
   else if (*goto_rval == 34)
   {
     var->type = String;
@@ -165,6 +166,8 @@ int parseRVal(Variable * var, char * string)
       return 0; // Invalid input
     }
   }
+
+  // Detected ' - might be a char, checking...
   else if (*goto_rval == 39)
   {
     //printf("Found single opening bracket at %ld\n", goto_rval - string);
@@ -188,6 +191,8 @@ int parseRVal(Variable * var, char * string)
     }
     var->data.character = *(opening_bracket + 1);
   }
+
+  // Any kind of digit detected - might be int/double, checking...
   else if (isdigit(*goto_rval))
   {
     if (strpbrk(goto_rval, alphabet) || strchr(goto_rval, 34) || strchr(goto_rval, 39))
@@ -227,6 +232,13 @@ int parseRVal(Variable * var, char * string)
       extractNumber((void *)&(var->data.decimal_number), goto_rval, NULL);
     }
   }
+
+  // Anything else is wrong
+  else
+  {
+    return 0;
+  }
+  
   return 1;
 }
 
