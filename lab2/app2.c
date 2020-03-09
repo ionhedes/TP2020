@@ -6,7 +6,7 @@
 
 unsigned malloc_counter;
 
-typedef enum {Int, Double, Char, String}TypeList;
+typedef enum {Undefined, Int, Double, Char, String}TypeList;
 
 typedef struct
 {
@@ -121,8 +121,7 @@ int parseRVal(Variable * var, char * string)
   //Now we have the address where the rvalue should start, we start working on inferring a type
   if (strchr(separators, *goto_rval))
   {
-    free(var);
-    malloc_counter--;
+
     return 0; //Invalid input
   }
   else if (*goto_rval == 34)
@@ -145,8 +144,7 @@ int parseRVal(Variable * var, char * string)
       }
       if (*goto_null)
       {
-        free(var);
-        malloc_counter--;
+
         return 0;
       }
       var->data.string.length = closing_bracket - opening_bracket - 1;
@@ -155,8 +153,7 @@ int parseRVal(Variable * var, char * string)
 
       if ((var->data.string.content = (char *)malloc((var->data.string.length + 1) * sizeof(char))) == NULL)
       {
-        free(var);
-        malloc_counter--;
+
         return 0;
       }
       malloc_counter++;
@@ -164,8 +161,7 @@ int parseRVal(Variable * var, char * string)
     }
     else
     {
-      free(var);
-      malloc_counter--;
+
       return 0; // Invalid input
     }
   }
@@ -177,8 +173,7 @@ int parseRVal(Variable * var, char * string)
     closing_bracket = opening_bracket + 2;
     if (*(closing_bracket) != 39)
     {
-      free(var);
-      malloc_counter--;
+
       return 0;
     }
     goto_null = closing_bracket + 1;
@@ -188,8 +183,7 @@ int parseRVal(Variable * var, char * string)
     }
     if (*goto_null)
     {
-      free(var);
-      malloc_counter--;
+
       return 0;
     }
     var->data.character = *(opening_bracket + 1);
@@ -198,8 +192,7 @@ int parseRVal(Variable * var, char * string)
   {
     if (strpbrk(goto_rval, alphabet) || strchr(goto_rval, 34) || strchr(goto_rval, 39))
     {
-      free(var);
-      malloc_counter--;
+
       return 0;
     }
 
@@ -210,8 +203,7 @@ int parseRVal(Variable * var, char * string)
       *goto_point = '0';
       if (strpbrk(goto_rval, separators))
       {
-        free(var);
-        malloc_counter--;
+
         return 0;
       }
       *goto_point = '.';
@@ -253,14 +245,27 @@ int main()
     malloc_counter++;
     if (!parseRVal(var, string))
     {
+      free(var);
       free(string);
-      malloc_counter--;
+      if (var->type == String)
+      {
+        free(var->data.string.content);
+        malloc_counter--;
+      }
+      malloc_counter -= 2;
       printf("Something went wrong, or the input is incorrect.\nUnreleased memory blocks: %d;\nExiting...\n", malloc_counter);
       exit(EXIT_FAILURE);
     }
 
     switch(var->type)
     {
+      case Undefined:
+      {
+        printf("Warning, you shouldn't be here!\n");
+        free(var);
+        malloc_counter--;
+        break;
+      }
       case Int:
       {
         printf("The integer is: %d\n", var->data.decimal_number);
