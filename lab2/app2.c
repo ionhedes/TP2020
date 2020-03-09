@@ -87,7 +87,6 @@ void extractNumber(void * destination, char * number_starting_point, char * poin
       *integer_destination = *integer_destination * 10 + (*aux - '0');
     }
   }
-
 }
 
 void extractString(char * destination, char * string_starting_point, char * string_ending_point)
@@ -145,7 +144,6 @@ int parseRVal(Variable * var, char * string)
       }
       if (*goto_null)
       {
-
         return 0;
       }
       var->data.string.length = closing_bracket - opening_bracket - 1;
@@ -154,7 +152,6 @@ int parseRVal(Variable * var, char * string)
 
       if ((var->data.string.content = (char *)malloc((var->data.string.length + 1) * sizeof(char))) == NULL)
       {
-
         return 0;
       }
       malloc_counter++;
@@ -162,7 +159,6 @@ int parseRVal(Variable * var, char * string)
     }
     else
     {
-
       return 0; // Invalid input
     }
   }
@@ -176,7 +172,6 @@ int parseRVal(Variable * var, char * string)
     closing_bracket = opening_bracket + 2;
     if (*(closing_bracket) != 39)
     {
-
       return 0;
     }
     goto_null = closing_bracket + 1;
@@ -186,7 +181,6 @@ int parseRVal(Variable * var, char * string)
     }
     if (*goto_null)
     {
-
       return 0;
     }
     var->data.character = *(opening_bracket + 1);
@@ -197,7 +191,6 @@ int parseRVal(Variable * var, char * string)
   {
     if (strpbrk(goto_rval, alphabet) || strchr(goto_rval, 34) || strchr(goto_rval, 39))
     {
-
       return 0;
     }
 
@@ -208,7 +201,6 @@ int parseRVal(Variable * var, char * string)
       *goto_point = '0';
       if (strpbrk(goto_rval, separators))
       {
-
         return 0;
       }
       *goto_point = '.';
@@ -238,7 +230,7 @@ int parseRVal(Variable * var, char * string)
   {
     return 0;
   }
-  
+
   return 1;
 }
 
@@ -251,7 +243,7 @@ int main()
   {
     if ((var = (Variable *)malloc(sizeof(Variable))) == NULL)
     {
-      printf("Something went wrong when making space for the variable.\nUnreleased memory blocks: %d;\Exiting...\n", malloc_counter);
+      printf("Something went wrong when making space for the variable.\nUnreleased memory blocks: %d;\nExiting...\n", malloc_counter);
       exit(EXIT_FAILURE);
     }
     malloc_counter++;
