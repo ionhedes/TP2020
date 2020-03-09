@@ -101,15 +101,8 @@ void extractString(char * destination, char * string_starting_point, char * stri
   *(destination + i) = '\0';
 }
 
-Variable * parseRVal(char * string)
+int parseRVal(Variable * var, char * string)
 {
-  Variable * var = NULL;
-  if ((var = (Variable *)malloc(sizeof(Variable))) == NULL)
-  {
-    return NULL;
-  }
-  malloc_counter++;
-
   char alphabet [] = "abcdefghijklmnopqrstuvwxyz";
   char separators [] = "()[]{}\\|_;:,<.>/?`~!@#$%^&*\n";
   char * opening_bracket = NULL, * closing_bracket = NULL, * aux = NULL;
@@ -130,7 +123,7 @@ Variable * parseRVal(char * string)
   {
     free(var);
     malloc_counter--;
-    return NULL; //Invalid input
+    return 0; //Invalid input
   }
   else if (*goto_rval == 34)
   {
@@ -154,7 +147,7 @@ Variable * parseRVal(char * string)
       {
         free(var);
         malloc_counter--;
-        return NULL;
+        return 0;
       }
       var->data.string.length = closing_bracket - opening_bracket - 1;
       printf("The length of your string is: %d\n", var->data.string.length);
@@ -164,7 +157,7 @@ Variable * parseRVal(char * string)
       {
         free(var);
         malloc_counter--;
-        return NULL;
+        return 0;
       }
       malloc_counter++;
       extractString(var->data.string.content, opening_bracket, closing_bracket);
@@ -173,7 +166,7 @@ Variable * parseRVal(char * string)
     {
       free(var);
       malloc_counter--;
-      return NULL; // Invalid input
+      return 0; // Invalid input
     }
   }
   else if (*goto_rval == 39)
@@ -186,7 +179,7 @@ Variable * parseRVal(char * string)
     {
       free(var);
       malloc_counter--;
-      return NULL;
+      return 0;
     }
     goto_null = closing_bracket + 1;
     while(*goto_null == ' ')
@@ -197,7 +190,7 @@ Variable * parseRVal(char * string)
     {
       free(var);
       malloc_counter--;
-      return NULL;
+      return 0;
     }
     var->data.character = *(opening_bracket + 1);
   }
@@ -207,7 +200,7 @@ Variable * parseRVal(char * string)
     {
       free(var);
       malloc_counter--;
-      return NULL;
+      return 0;
     }
 
     //We have a number, finding out whether it is an integer, or a floating point number
@@ -219,7 +212,7 @@ Variable * parseRVal(char * string)
       {
         free(var);
         malloc_counter--;
-        return NULL;
+        return 0;
       }
       *goto_point = '.';
       var->type = Double;
@@ -234,7 +227,7 @@ Variable * parseRVal(char * string)
       {
         free(var);
         malloc_counter--;
-        return NULL;
+        return 0;
       }
       var->type = Int;
 
@@ -242,7 +235,7 @@ Variable * parseRVal(char * string)
       extractNumber((void *)&(var->data.decimal_number), goto_rval, NULL);
     }
   }
-  return var;
+  return 1;
 }
 
 int main()
@@ -252,7 +245,13 @@ int main()
   string = getString();
   if (checkString(string))
   {
-    if ((var = parseRVal(string)) == NULL)
+    if ((var = (Variable *)malloc(sizeof(Variable))) == NULL)
+    {
+      printf("Something went wrong when making space for the variable.\nUnreleased memory blocks: %d;\Exiting...\n", malloc_counter);
+      exit(EXIT_FAILURE);
+    }
+    malloc_counter++;
+    if (!parseRVal(var, string))
     {
       free(string);
       malloc_counter--;
@@ -292,6 +291,10 @@ int main()
         break;
       }
     }
+  }
+  else
+  {
+    printf("Invalid input.\n");
   }
 
   free(string);
