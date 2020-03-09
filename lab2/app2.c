@@ -10,6 +10,7 @@ typedef enum {Int, Double, Char, String}TypeList;
 
 typedef struct
 {
+  char * name;
   TypeList type;
   union
   {
@@ -89,9 +90,19 @@ void extractNumber(void * destination, char * number_starting_point, char * poin
 
 }
 
-Variable * parseString(char * string)
+void extractString(char * destination, char * string_starting_point, char * string_ending_point)
 {
   int i = 0;
+  char * aux = NULL;
+  for (aux = string_starting_point + 1; aux < string_ending_point; aux++, i++)
+  {
+    *(destination + i) = *aux;
+  }
+  *(destination + i) = '\0';
+}
+
+Variable * parseRVal(char * string)
+{
   Variable * var = NULL;
   if ((var = (Variable *)malloc(sizeof(Variable))) == NULL)
   {
@@ -156,12 +167,7 @@ Variable * parseString(char * string)
         return NULL;
       }
       malloc_counter++;
-      for (aux = opening_bracket + 1; aux < closing_bracket; aux++)
-      {
-        var->data.string.content [i++] = *aux;
-      }
-      var->data.string.content [var->data.string.length] = '\0';
-
+      extractString(var->data.string.content, opening_bracket, closing_bracket);
     }
     else
     {
@@ -246,7 +252,7 @@ int main()
   string = getString();
   if (checkString(string))
   {
-    if ((var = parseString(string)) == NULL)
+    if ((var = parseRVal(string)) == NULL)
     {
       free(string);
       malloc_counter--;
