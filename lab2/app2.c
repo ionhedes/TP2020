@@ -4,9 +4,11 @@
 #include <ctype.h>
 #include <math.h>
 
+// Used for debugging and peace of mind
+// At the end of execution, it should always equate 0
 unsigned malloc_counter;
 
-typedef enum {Undefined, Int, Double, Char, String}TypeList;
+typedef enum {Undefined, Int, Double, Char, String}TypeList; // Represents types more consistently than numbers
 
 typedef struct
 {
@@ -25,12 +27,14 @@ typedef struct
   }data;
 }Variable;
 
+// Generic function for treating input strings and allocating them dinamically
 char * getString()
 {
   char * string = NULL, * aux = NULL;
   char buffer_char;
   unsigned length = 0;
 
+  // Strings are considered to span until \n
   while ((buffer_char = getchar()) != '\n')
   {
     if ((aux = (char *)realloc(string, (length + 1) * sizeof(char))) == NULL)
@@ -41,10 +45,14 @@ char * getString()
       return NULL;
     }
     string = aux;
+
+    // malloc_counter should only be increased once, on the first iteration
     malloc_counter += (!length ? 1 : 0);
     *(string + length) = buffer_char;
     length++;
   }
+
+  // No use setting up the \0 character if we don't have a valid string
   if (string)
   {
     *(string + length) = '\0';
@@ -52,8 +60,34 @@ char * getString()
   return string;
 }
 
+// Frees everything related to a variable
+// As all the pointers in a struct SEEM to be initially set to NULL (analogous ints/doubles are set to 0),
+// we can always check the existence of something before freeing it (makes the malloc_counter more reliable)
+void freeVar(Variable * var)
+{
+  if (var->name)
+  {
+    free(var->name);
+    malloc_counter--;
+  }
+
+  //If the type of the variable is a string, we have something else to free
+  if (var->type == String && var->data.string.content)
+  {
+    free(var->data.string.content);
+    malloc_counter--;
+  }
+
+  // var should always exist at this point, otherwise the execution would have stopped a long time ago
+  free(var);
+  malloc_counter--;
+}
+
 int checkString(char * string)
 {
+  // Basic conditions for the string to be considered valid include:
+  // - the first character of the string must be a letter
+  // - there must be an = sign inside the string
   if(!isalpha(string [0]) || !strchr(string, '='))
   {
     return 0;
@@ -61,19 +95,23 @@ int checkString(char * string)
   return 1;
 }
 
+// Used for both integers and floating points, hence the void *
 void extractNumber(void * destination, char * number_starting_point, char * point_position)
 {
   int * integer_destination = NULL;
   double * floating_point_destination = NULL;
   char *aux = NULL;
 
+  // Here we make the difference between the 2 data types
   if (point_position)
   {
-    floating_point_destination = (double *)destination;
+    floating_point_destination = (double *)destination; // Setting the pointer back to its original type
+    // Adding integer value
     for (aux = number_starting_point; isdigit(*aux); aux++)
     {
       *floating_point_destination = *floating_point_destination * 10 + (*aux - '0');
     }
+    // Adding decimal value
     for(aux = point_position + 1; isdigit(*aux); aux++)
     {
       *floating_point_destination = *floating_point_destination + (*aux - '0') * pow(10, (double)(point_position - aux));
@@ -81,7 +119,8 @@ void extractNumber(void * destination, char * number_starting_point, char * poin
   }
   else
   {
-    integer_destination = (int *)destination;
+    integer_destination = (int *)destination; // Setting the pointer back to its original type
+    // Adding integer value
     for (aux = number_starting_point; isdigit(*aux); aux++)
     {
       *integer_destination = *integer_destination * 10 + (*aux - '0');
@@ -89,6 +128,7 @@ void extractNumber(void * destination, char * number_starting_point, char * poin
   }
 }
 
+// Used for strings, pretty self explanatory
 void extractString(char * destination, char * string_starting_point, char * string_ending_point)
 {
   int i = 0;
@@ -100,6 +140,8 @@ void extractString(char * destination, char * string_starting_point, char * stri
   *(destination + i) = '\0';
 }
 
+// Parses the right-value, checks for errors, puts everything inside the var
+// This accounts for the value of the variable
 int parseRVal(Variable * var, char * string)
 {
   char alphabet [] = "abcdefghijklmnopqrstuvwxyz";
@@ -124,38 +166,38 @@ int parseRVal(Variable * var, char * string)
   }
 
   // Detected " - might be string, checking...
-  else if (*goto_rval == 34)
+  else if (*goto_rval == 34) // 34 = "
   {
     var->type = String;
-    opening_bracket = goto_rval;
-    printf("Found opening bracket at %ld\n", opening_bracket - string);
+    opening_bracket = goto_rval; // Found opening double-bracket
     if ((closing_bracket = strchr(opening_bracket + 1, 34)))
     {
-      printf("Found closing bracket at %ld\n", closing_bracket - string);
-      while((aux = strchr(closing_bracket + 1, 34)))
+      while((aux = strchr(closing_bracket + 1, 34))) // Found closing double-bracket, there might still be others
       {
         closing_bracket = aux;
       }
-      printf("Found final closing bracket at %ld\n", closing_bracket - string);
+      // After the loop, we are sure to have the final closing double-bracket
+
+      // Find the position of the \0 character
       goto_null = closing_bracket + 1;
-      while (*goto_null == ' ')
+      while (*goto_null == ' ') // Find the position of the \0 character
       {
         goto_null++;
       }
-      if (*goto_null)
+      if (*goto_null) // There should only be spaces after the variable value and the terminating character
       {
         return 0;
       }
-      var->data.string.length = closing_bracket - opening_bracket - 1;
-      printf("The length of your string is: %d\n", var->data.string.length);
 
+      var->data.string.length = closing_bracket - opening_bracket - 1; //Set the length of the string
 
       if ((var->data.string.content = (char *)malloc((var->data.string.length + 1) * sizeof(char))) == NULL)
       {
         return 0;
       }
       malloc_counter++;
-      extractString(var->data.string.content, opening_bracket, closing_bracket);
+
+      extractString(var->data.string.content, opening_bracket, closing_bracket); // Puts the string in the var
     }
     else
     {
@@ -164,31 +206,34 @@ int parseRVal(Variable * var, char * string)
   }
 
   // Detected ' - might be a char, checking...
-  else if (*goto_rval == 39)
+  else if (*goto_rval == 39) // 39 = '
   {
     //printf("Found single opening bracket at %ld\n", goto_rval - string);
     var->type = Char;
-    opening_bracket = goto_rval;
-    closing_bracket = opening_bracket + 2;
-    if (*(closing_bracket) != 39)
+    opening_bracket = goto_rval; // Found opening single-bracket
+    closing_bracket = opening_bracket + 2; // Because we are dealing with a character, the closing single-bracket should be 2 characters away
+    if (*(closing_bracket) != 39) // If it isn't, the input is invalid
     {
       return 0;
     }
+
+    // Find the position of the \0 character
     goto_null = closing_bracket + 1;
     while(*goto_null == ' ')
     {
       goto_null++;
     }
-    if (*goto_null)
+    if (*goto_null) // There should only be spaces after the variable value and the terminating character
     {
       return 0;
     }
-    var->data.character = *(opening_bracket + 1);
+    var->data.character = *(opening_bracket + 1); //The char is in between the brackets, and can be anything
   }
 
   // Any kind of digit detected - might be int/double, checking...
   else if (isdigit(*goto_rval))
   {
+    // No non-number characters allowed
     if (strpbrk(goto_rval, alphabet) || strchr(goto_rval, 34) || strchr(goto_rval, 39))
     {
       return 0;
@@ -206,6 +251,7 @@ int parseRVal(Variable * var, char * string)
       *goto_point = '.';
       var->type = Double;
 
+      // Just to be sure, we set it to 0
       var->data.floating_point_number = 0;
       extractNumber((void *)&(var->data.floating_point_number), goto_rval, goto_point);
 
@@ -214,12 +260,11 @@ int parseRVal(Variable * var, char * string)
     {
       if (strpbrk(goto_rval, separators))
       {
-        free(var);
-        malloc_counter--;
         return 0;
       }
       var->type = Int;
 
+      // Just to be sure, we set it to 0
       var->data.decimal_number = 0;
       extractNumber((void *)&(var->data.decimal_number), goto_rval, NULL);
     }
@@ -234,69 +279,110 @@ int parseRVal(Variable * var, char * string)
   return 1;
 }
 
+// Parses the left-value, checks for errors, puts everything inside the var
+// This accounts for the name of the variable
+int parseLVal(Variable * var, char * string)
+{
+  char * aux = NULL;
+  char invalid_chararcters [] = " ()[]{}\\|;:,<.>/?`~!@#$%^&*\n";
+  char * goto_end = strchr(string, '=') - 1, * goto_start = string;
+  int length;
+
+  // Get rid of whitespaces, both in front and after the variable name
+  // Also compute the length of the variable name
+  while (*goto_end == ' ')
+  {
+    goto_end--;
+  }
+  while (*goto_start == ' ')
+  {
+    goto_start++;
+  }
+  length = goto_end - goto_start - 1;
+
+  for (aux = goto_start; aux <= goto_end; aux++)
+  {
+    // Check if there are invalid characters for a variable name
+    if (strchr(invalid_chararcters, *aux))
+    {
+      return 0;
+    }
+  }
+
+  if ((var->name = (char *)malloc((length + 1) * sizeof(char))) == NULL)
+  {
+    return 0;
+  }
+  malloc_counter++;
+
+  // We call it like this (-1, +1) because of the structure of the loop inside extractString()
+  // Prone to change in next release
+  extractString(var->name, goto_start - 1, goto_end + 1);
+
+  return 1;
+}
+
 int main()
 {
   Variable * var = NULL;
   char * string = NULL;
+
+  printf("Enter the desired attribution:\n");
   string = getString();
+  // Checks for generic errors, and if the default conditions are met
   if (checkString(string))
   {
+    //It is better to have the variable have its memory allocated here, so it doesn't snowball into messy code
     if ((var = (Variable *)malloc(sizeof(Variable))) == NULL)
     {
       printf("Something went wrong when making space for the variable.\nUnreleased memory blocks: %d;\nExiting...\n", malloc_counter);
       exit(EXIT_FAILURE);
     }
     malloc_counter++;
-    if (!parseRVal(var, string))
+
+    // Parses both the left and right side of the expression.
+    //  These functions also check for most of the errors that might appear
+    if (!parseRVal(var, string) || !parseLVal(var, string))
     {
-      free(var);
+      // If any memory allocation, or invalid character occurs, the functions will throw 0 back at us, so we know to stop the execution
+      freeVar(var);
       free(string);
-      if (var->type == String)
-      {
-        free(var->data.string.content);
-        malloc_counter--;
-      }
-      malloc_counter -= 2;
+      malloc_counter--;
       printf("Something went wrong, or the input is incorrect.\nUnreleased memory blocks: %d;\nExiting...\n", malloc_counter);
       exit(EXIT_FAILURE);
     }
 
+    printf("The name is: %s\n", var->name);
     switch(var->type)
     {
       case Undefined:
       {
         printf("Warning, you shouldn't be here!\n");
-        free(var);
-        malloc_counter--;
+        freeVar(var);
         break;
       }
       case Int:
       {
         printf("The integer is: %d\n", var->data.decimal_number);
-        free(var);
-        malloc_counter--;
+        freeVar(var);
         break;
       }
       case Char:
       {
         printf("The caracter is: %c\n", var->data.character);
-        free(var);
-        malloc_counter--;
+        freeVar(var);
         break;
       }
       case String:
       {
         printf("The string is: %s\n", var->data.string.content);
-        free(var->data.string.content);
-        free(var);
-        malloc_counter -= 2;
+        freeVar(var);
         break;
       }
       case Double:
       {
         printf("The floating point number is: %f\n", var->data.floating_point_number);
-        free(var);
-        malloc_counter--;
+        freeVar(var);
         break;
       }
     }
