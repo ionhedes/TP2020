@@ -144,6 +144,7 @@ void extractString(char * destination, char * string_starting_point, char * stri
 // This accounts for the value of the variable
 int parseRVal(Variable * var, char * string)
 {
+  int is_negative = 0;
   char alphabet [] = "abcdefghijklmnopqrstuvwxyz";
   char separators [] = "()[]{}\\|_;:,<.>/?`~!@#$%^&*\n";
   char * opening_bracket = NULL, * closing_bracket = NULL, * aux = NULL;
@@ -230,9 +231,24 @@ int parseRVal(Variable * var, char * string)
     var->data.character = *(opening_bracket + 1); //The char is in between the brackets, and can be anything
   }
 
-  // Any kind of digit detected - might be int/double, checking...
-  else if (isdigit(*goto_rval))
+  // Digit or minus detected - might be int/double, checking...
+  else if (isdigit(*goto_rval) || *goto_rval == '-')
   {
+    // Treating the case when the number is negative
+    if (*goto_rval == '-')
+    {
+      // Flag that the number is negative
+      is_negative = 1;
+      while (*(++goto_rval) == ' ')
+      {
+        //Skipping possible whitespaces
+      }
+      // If the following char is anything but a number, the input is invalid
+      if (!isdigit(*goto_rval))
+      {
+        return 0;
+      }
+    }
     // No non-number characters allowed
     if (strpbrk(goto_rval, alphabet) || strchr(goto_rval, 34) || strchr(goto_rval, 39))
     {
@@ -255,6 +271,11 @@ int parseRVal(Variable * var, char * string)
       var->data.floating_point_number = 0;
       extractNumber((void *)&(var->data.floating_point_number), goto_rval, goto_point);
 
+      //If the number is negative, correct the sign
+      if (is_negative)
+      {
+        var->data.floating_point_number = -var->data.floating_point_number;
+      }
     }
     else
     {
@@ -267,6 +288,12 @@ int parseRVal(Variable * var, char * string)
       // Just to be sure, we set it to 0
       var->data.decimal_number = 0;
       extractNumber((void *)&(var->data.decimal_number), goto_rval, NULL);
+
+      //If the number is negative, correct the sign
+      if (is_negative)
+      {
+        var->data.decimal_number = -var->data.decimal_number;
+      }
     }
   }
 
