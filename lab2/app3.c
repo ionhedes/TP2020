@@ -113,13 +113,17 @@ Animal * createAnimal()
 int main()
 {
   Animal * animal = NULL;
+
   if ((animal = createAnimal()) == NULL)
   {
     fprintf(stderr, "Failed to create Animal object;\nUnreleased memory blocks: %d;\nExiting...", malloc_counter);
     exit(EXIT_FAILURE);
   }
+
   putchar('\n');
   printAnimalInfo(animal);
+  putchar('\n');
+  
   free(animal);
   malloc_counter--;
   printf("Unreleased memory blocks: %d;\nExiting...\n", malloc_counter);
