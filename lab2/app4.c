@@ -4,6 +4,10 @@
 #define MAX_VAL 63
 #define ORDER_OFFSET 12
 
+// WARNING!
+// Because of the memory limitation imposed by this exercise, and of the incompatibility between floating point data types and bit fields,
+// the problem can only set multiples, not submultiples
+
 // Used for debugging and peace of mind
 // At the end of execution, it should always equate 0
 unsigned malloc_counter;
