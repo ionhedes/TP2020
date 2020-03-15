@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Used for debugging and peace of mind
+// At the end of execution, it should always equate 0
 unsigned malloc_counter;
 
 // The size of a struct where there are bitfields is still an integer number of bytes
@@ -94,7 +96,7 @@ void printAnimalInfo(Animal * animal)
 Animal * createAnimal()
 {
   Animal * animal = NULL;
-  
+
   // Make space for the animal structure
   if ((animal = (Animal *)malloc(sizeof(Animal))) == NULL)
   {
