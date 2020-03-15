@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <regex.h>
 #include <stdlib.h>
+#include <math.h>
 #define MAX_VAL 63
 #define ORDER_OFFSET 12
+#define ACCEPTED_DECIMAL_ERROR pow(10, -7) // Because of the inaccurate nature of floating point number calculations, we need an acceptable error to make the computation feasible
+#define TIME_OUT_SWITCH 40 // Used when a while loop goes berserk
 
 // WARNING!
 // Because of the memory limitation imposed by this exercise, and of the incompatibility between floating point data types and bit fields,
@@ -63,13 +66,58 @@ int checkUnit(char * unit_to_match, char * unit_to_check)
 
 // Sets the right scale order of the measurement, while adjusting the magnitude correspondingly
 // Keeps the precision of the measurement
-void normaliseMagnitude(Measurement * measurement, unsigned * aux_magnitude)
+void normaliseMagnitude(Measurement * measurement, float * aux_magnitude)
 {
-  measurement->order = 0;
-  while(*aux_magnitude % 10 == 0)
+  unsigned loop_counter = 0;
+  int integer_part;
+  float fractional_part = *aux_magnitude - floor(*aux_magnitude); // Calculating the integer part of our value
+  measurement->order = ORDER_OFFSET;
+
+  // If the number has a fractional part, we need to scale down the order (we will save the information is submultiples of our unit)
+  // If the number has no fractional part and can be divided by 10, we need to scale up the order (we will save the information is multiples of our unit)
+
+  if (fractional_part < ACCEPTED_DECIMAL_ERROR) // If the fractional part is smaller than the error, we consider it to be zero
   {
-    *aux_magnitude /= 10;
-    measurement->order ++;
+    // The computations are made considering the value is an integer
+    // The computations are made using an auxiliary integer
+    integer_part = (int)(*aux_magnitude);
+    while (integer_part % 10 == 0 && integer_part) // If the integer_part is 0, we need to stop the loop, or else it breaks the program
+    {
+      *aux_magnitude /= 10;
+      integer_part /= 10;
+      measurement->order++;
+    }
+  }
+  else if (fractional_part > 1 - ACCEPTED_DECIMAL_ERROR) // If the fractional number is very close to one, we approximate the value by adding 1
+  {
+    // The computations are made considering the value is an integer
+    // The computations are made using an auxiliary integer
+    integer_part = (int)(*aux_magnitude + 1);
+    *aux_magnitude = ceil(*aux_magnitude);
+    while (integer_part % 10 == 0 && integer_part) // If the integer_part is 0, we need to stop the loop, or else it breaks the program
+    {
+      *aux_magnitude /= 10;
+      integer_part /= 10;
+      measurement->order++;
+    }
+  }
+  else // In any other case, we have a valid fractional value
+  {
+    // This loop is prone to get stuck, so we need to implement an failsafe
+    while (fractional_part > ACCEPTED_DECIMAL_ERROR && fractional_part < 1 - ACCEPTED_DECIMAL_ERROR) // we do this until the fractional part escapes these boundaries
+    {
+      loop_counter++;
+      if(loop_counter > TIME_OUT_SWITCH)
+      {
+        malloc_counter--;
+        free(measurement);
+        fprintf(stderr, "The computation of the normalised magnitude timed out (caused by an infinite loop and floating point operation inaccuracies);\nUnreleased memory blocks: %d;\nExiting...\n", malloc_counter);
+        exit(EXIT_FAILURE);
+      }
+      *aux_magnitude *= 10;
+      fractional_part = *aux_magnitude - floor(*aux_magnitude);
+      measurement->order--;
+    }
   }
 }
 
@@ -80,17 +128,17 @@ int isInvalidOrder(const unsigned order)
 }
 
 // Turns the order code of the measurement into a string
-void extractMultiple(unsigned order)
+void extractMultiple(const unsigned order)
 {
   // Warning, we have no scale order for some multiples of 10
   char * multiple_list [] = {"Pico", "", "", "Nano", "", "", "Micro", "", "", "Mili", "Centi", "Deci", "", "Deca", "Hecto", "Kilo", "", "", "Mega", "", "", "Giga", "", "", "Tera"};
 
   // An array starts with index 0, hence we cannot use negative indexes for submultiples - we use an offset
-  printf("%s", multiple_list [order + ORDER_OFFSET]);
+  printf("%s", multiple_list [order]);
 }
 
 // Turns the unit code of the measurement into a string
-void extractUnit(unsigned unit)
+void extractUnit(const unsigned unit)
 {
   char * unit_list [] = {"gram", "liter", "meter"};
   printf("%s", unit_list [unit]);
@@ -98,8 +146,8 @@ void extractUnit(unsigned unit)
 
 void getMeasurementData(Measurement * measurement)
 {
-  // Some auxilliary variables, since we can't scanf() directly into a bit-field
-  unsigned aux_magnitude;
+  // Some auxiliary variables, since we can't scanf() directly into a bit-field
+  float aux_magnitude;
   char aux_unit [11];
   int i, return_checker, found = 0;
 
@@ -140,7 +188,7 @@ void getMeasurementData(Measurement * measurement)
   }
 
   printf("Enter the value/magnitude: ");
-  scanf("%u", &aux_magnitude);
+  scanf("%f", &aux_magnitude);
   normaliseMagnitude(measurement, &aux_magnitude); // After getting the magnitude/value of the measurement, we send it to scale order correction
 
   // Checking if the corrected magnitude fits the field in the struct, and if the scale order is recognized
@@ -149,11 +197,11 @@ void getMeasurementData(Measurement * measurement)
     printf("WARNING, you are trying to input a number incompatible with this field!\n");
     do {
       printf("Please try again with a correct number: ");
-      scanf("%u", &aux_magnitude);
+      scanf("%f", &aux_magnitude);
       normaliseMagnitude(measurement, &aux_magnitude);
     } while(aux_magnitude > MAX_VAL || isInvalidOrder(measurement->order)); // Inputting new magnitudes until we find the one that fits
   }
-  measurement->magnitude = aux_magnitude;
+  measurement->magnitude = (unsigned)aux_magnitude;
 }
 
 void printMeasurementInfo(Measurement * measurement)
