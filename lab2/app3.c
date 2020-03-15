@@ -62,7 +62,7 @@ void getAnimalData(Animal * animal)
   printf("Enter the usual weight of the animal: ");
   scanf("%f", &(animal->weight));
 
-  // Dangerous flag - shrunk unsigned (acts as a bool)
+  // Dangerous (not literally) flag - shrunk unsigned (acts as a bool)
   printf("Is the animal dangerous for humans? (1/0) ");
   scanf("%u", &aux_is_dangerous);
   if (aux_is_dangerous > 1)
@@ -123,7 +123,7 @@ int main()
   putchar('\n');
   printAnimalInfo(animal);
   putchar('\n');
-  
+
   free(animal);
   malloc_counter--;
   printf("Unreleased memory blocks: %d;\nExiting...\n", malloc_counter);
