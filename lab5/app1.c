@@ -66,7 +66,7 @@ char * getString()
   // No use setting up the \0 character if we don't have a valid string
   if (string)
   {
-    *(string+length) = '\0';
+    *(string + length) = '\0';
   }
   return string;
 }
@@ -139,7 +139,7 @@ Product * addProductToArray()
     {
       free(aux_price);
       malloc_counter--;
-      fprintf(stderr, "\t  ! Enter a valid price !\n");
+      printf("\t  ! Enter a valid price !\n");
       printf("\t - price of the product: ");
       if((aux_price = getString()) == NULL)
       {
