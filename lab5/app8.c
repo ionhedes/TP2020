@@ -120,14 +120,25 @@ int main(int argc, char * argv [])
     {
       OPENED_FILES_COUNTER--;
     }
-    fprintf(stderr, "Could not parse bits.\n");
+    fprintf(stderr, "Could not parse bits.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);");
     exit(EXIT_FAILURE);
   }
 
 
   if (!findSequence(file, bytes, argc - 2))
   {
-    fprintf(stderr, "Failed to parse file.\n");
+    free(bytes);
+    MALLOC_COUNTER--;
+    if (fclose(file))
+    {
+      fprintf(stderr, "Failed to close the file.\n");
+    }
+    else
+    {
+      OPENED_FILES_COUNTER--;
+    }
+    fprintf(stderr, "Failed to parse file.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);");
+    exit(EXIT_FAILURE);
   }
 
   if (fclose(file))
