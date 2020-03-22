@@ -159,7 +159,7 @@ int writeProductsToDatabase(Product ** prod_array, const unsigned * array_size, 
 int main(int argc, char * argv [])
 {
   Product ** prod_array = NULL, ** aux_prod_array = NULL;
-  unsigned short option;
+  int option;
   unsigned array_size = 0;
 
   if (argc != 2)
@@ -171,7 +171,7 @@ int main(int argc, char * argv [])
   do
   {
     generateMenu();
-    if (scanf("%hu", &option) != 1)
+    if (!getInt(&option, isValidInteger, stdin))
     {
       freeProductArray(prod_array, &array_size);
       fprintf(stderr, "Error when reading the user's choice.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
@@ -182,7 +182,6 @@ int main(int argc, char * argv [])
       case 1:
       {
         printf("Adding product:\n");
-        getchar();
         if ((aux_prod_array = resizeProductArray(prod_array, &array_size, 1)) == NULL)
         {
           freeProductArray(prod_array, &array_size);
