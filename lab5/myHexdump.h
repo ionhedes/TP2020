@@ -4,7 +4,7 @@ int printRow(FILE * source)
 {
   int i;
   int eof_index = -1;
-  char buffer [16];
+  unsigned char buffer [16];
 
   // Offset
   long current_position = ftell(source);
