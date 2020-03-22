@@ -35,73 +35,11 @@ Product ** resizeProductArray(Product ** prod_array, unsigned * array_size, cons
   return aux;
 }
 
-/**char * getString(FILE * stream)
-{
-  char * string = NULL, * aux = NULL;
-  char buffer_char;
-  unsigned length = 0;
-
-  // Strings are considered to span until \n
-  while((buffer_char = getc(stream)) != '\n')
-  {
-    if ((aux = (char *)realloc(string, (length + 1) * sizeof(char))) == NULL)
-    {
-      fprintf(stderr, "getString() error...\n");
-      free(string);
-      MALLOC_COUNTER--;
-      return NULL;
-    }
-    string = aux;
-
-    //MALLOC_COUNTER should only be increased once, on the first iteration
-    MALLOC_COUNTER += (!length ? 1 : 0);
-    *(string + length) = buffer_char;
-    length++;
-  }
-
-  // No use setting up the \0 character if we don't have a valid string
-  if (string)
-  {
-    *(string + length) = '\0';
-  }
-  return string;
-}*/
-
 void initProduct(Product * prod)
 {
   prod->name = NULL;
   prod->price = 0;
 }
-
-/**int isValidFloat(char * number)
-{
-  char * iterator = number;
-  char * point_location = strchr(number, '.');
-
-  if (*iterator == '-')
-  {
-    iterator++;
-  }
-  for (; iterator < point_location ; iterator++)
-  {
-    if (!isdigit(*iterator))
-    {
-      return 0;
-    }
-  }
-
-  if (point_location != NULL)
-  {
-    for (iterator = point_location + 1; *iterator != '\0'; iterator++)
-    {
-      if (!isdigit(*iterator))
-      {
-        return 0;
-      }
-    }
-  }
-  return 1;
-}*/
 
 Product * addProductToArray()
 {
