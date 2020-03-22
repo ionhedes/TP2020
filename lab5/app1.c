@@ -1,9 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
-
-unsigned malloc_counter, opened_files_counter;
+#include "myStdlib.h"
 
 typedef struct
 {
@@ -19,10 +15,10 @@ void freeProductArray(Product ** prod_array, const unsigned * array_size)
     if (prod_array [i]->name)
     {
       free(prod_array [i]->name);
-      malloc_counter--;
+      MALLOC_COUNTER--;
     }
     free(prod_array [i]);
-    malloc_counter--;
+    MALLOC_COUNTER--;
   }
   free(prod_array);
 }
@@ -39,26 +35,26 @@ Product ** resizeProductArray(Product ** prod_array, unsigned * array_size, cons
   return aux;
 }
 
-char * getString()
+/**char * getString(FILE * stream)
 {
   char * string = NULL, * aux = NULL;
   char buffer_char;
   unsigned length = 0;
 
   // Strings are considered to span until \n
-  while ((buffer_char = getchar()) != '\n')
+  while((buffer_char = getc(stream)) != '\n')
   {
     if ((aux = (char *)realloc(string, (length + 1) * sizeof(char))) == NULL)
     {
-      fprintf(stderr, "getString() error..\n");
+      fprintf(stderr, "getString() error...\n");
       free(string);
-      malloc_counter--;
+      MALLOC_COUNTER--;
       return NULL;
     }
     string = aux;
 
-    //malloc_counter should only be increased once, on the first iteration
-    malloc_counter += (!length ? 1 : 0);
+    //MALLOC_COUNTER should only be increased once, on the first iteration
+    MALLOC_COUNTER += (!length ? 1 : 0);
     *(string + length) = buffer_char;
     length++;
   }
@@ -69,7 +65,7 @@ char * getString()
     *(string + length) = '\0';
   }
   return string;
-}
+}*/
 
 void initProduct(Product * prod)
 {
@@ -77,11 +73,15 @@ void initProduct(Product * prod)
   prod->price = 0;
 }
 
-int isPriceValid(char * price)
+/**int isValidFloat(char * number)
 {
-  char * iterator = price;
-  char * point_location = strchr(price, '.');
+  char * iterator = number;
+  char * point_location = strchr(number, '.');
 
+  if (*iterator == '-')
+  {
+    iterator++;
+  }
   for (; iterator < point_location ; iterator++)
   {
     if (!isdigit(*iterator))
@@ -100,9 +100,8 @@ int isPriceValid(char * price)
       }
     }
   }
-
   return 1;
-}
+}*/
 
 Product * addProductToArray()
 {
@@ -113,48 +112,48 @@ Product * addProductToArray()
   {
     return NULL;
   }
-  malloc_counter++;
+  MALLOC_COUNTER++;
   initProduct(prod);
 
   printf("\t - name of the product: ");
-  if ((prod->name = getString()) == NULL)
+  if ((prod->name = getString(stdin)) == NULL)
   {
     free(prod);
-    malloc_counter--;
+    MALLOC_COUNTER--;
     return NULL;
   }
 
   printf("\t - price of the product: ");
-  if((aux_price = getString()) == NULL)
+  if((aux_price = getString(stdin)) == NULL)
   {
     free(prod);
     free(prod->name);
-    malloc_counter -= 2;
+    MALLOC_COUNTER -= 2;
     return NULL;
   }
 
-  if (!isPriceValid(aux_price))
+  if (!isValidFloat(aux_price))
   {
     do
     {
       free(aux_price);
-      malloc_counter--;
+      MALLOC_COUNTER--;
       printf("\t  ! Enter a valid price !\n");
       printf("\t - price of the product: ");
-      if((aux_price = getString()) == NULL)
+      if((aux_price = getString(stdin)) == NULL)
       {
         free(prod);
         free(prod->name);
-        malloc_counter -= 2;
+        MALLOC_COUNTER -= 2;
         return NULL;
       }
     }
-    while(!isPriceValid(aux_price));
+    while(!isValidFloat(aux_price));
   }
 
   prod->price = (float)atof(aux_price);
   free(aux_price);
-  malloc_counter--;
+  MALLOC_COUNTER--;
 
 
   return prod;
@@ -194,7 +193,7 @@ int writeProductsToDatabase(Product ** prod_array, const unsigned * array_size, 
     fprintf(stderr, "Failed to open file for the database to be written in.\n");
     return 0;
   }
-  opened_files_counter++;
+  OPENED_FILES_COUNTER++;
 
   for (i = 0; i < *array_size; i++)
   {
@@ -213,7 +212,7 @@ int writeProductsToDatabase(Product ** prod_array, const unsigned * array_size, 
     fprintf(stderr, "Error while closing file.\n");
     return 0;
   }
-  opened_files_counter--;
+  OPENED_FILES_COUNTER--;
 
   return 1;
 
@@ -227,7 +226,7 @@ int main(int argc, char * argv [])
 
   if (argc != 2)
   {
-    fprintf(stderr, "Invalid number of parameters.\n Exiting...\n");
+    fprintf(stderr, "Invalid number of parameters.\nExiting...\n");
     return -1;
   }
 
@@ -237,7 +236,7 @@ int main(int argc, char * argv [])
     if (scanf("%hu", &option) != 1)
     {
       freeProductArray(prod_array, &array_size);
-      fprintf(stderr, "Error when reading the user's choice.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+      fprintf(stderr, "Error when reading the user's choice.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
       exit(EXIT_FAILURE);
     }
     switch (option)
@@ -249,7 +248,7 @@ int main(int argc, char * argv [])
         if ((aux_prod_array = resizeProductArray(prod_array, &array_size, 1)) == NULL)
         {
           freeProductArray(prod_array, &array_size);
-          fprintf(stderr, "Error when incrementing array\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+          fprintf(stderr, "Error when incrementing array\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
           exit(EXIT_FAILURE);
         }
         prod_array = aux_prod_array;
@@ -257,7 +256,7 @@ int main(int argc, char * argv [])
         if ((prod_array [array_size - 1] = addProductToArray()) == NULL)
         {
           freeProductArray(prod_array, &array_size);
-          fprintf(stderr, "Error when adding product in array\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+          fprintf(stderr, "Error when adding product in array\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
         }
         break;
       }
@@ -281,7 +280,7 @@ int main(int argc, char * argv [])
       default:
       {
         freeProductArray(prod_array, &array_size);
-        fprintf(stderr, "Runtime exception caught.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+        fprintf(stderr, "Runtime exception caught.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
         exit(EXIT_FAILURE);
       }
     }
@@ -290,7 +289,7 @@ int main(int argc, char * argv [])
 
 
   freeProductArray(prod_array, &array_size);
-  printf("Execution ended successfully;\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+  printf("Execution ended successfully;\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
 
   return 0;
 }

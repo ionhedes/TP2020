@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "myHexdump.h"
 
-unsigned opened_files_counter;
+unsigned OPENED_FILES_COUNTER;
 
 int main(int argc, char * argv [])
 {
@@ -19,7 +19,7 @@ int main(int argc, char * argv [])
     fprintf(stderr, "Failed to open file.\nExiting...\n");
     exit(EXIT_FAILURE);
   }
-  opened_files_counter++;
+  OPENED_FILES_COUNTER++;
 
   if(!myHexdump(source))
   {
@@ -33,9 +33,9 @@ int main(int argc, char * argv [])
   }
   else
   {
-    opened_files_counter--;
+    OPENED_FILES_COUNTER--;
   }
 
-  printf("Execution ended;\nUnclosed files: %d\nExiting...\n", opened_files_counter);
+  printf("Execution ended;\nUnclosed files: %d\nExiting...\n", OPENED_FILES_COUNTER);
   return 0;
 }

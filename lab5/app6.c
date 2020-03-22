@@ -1,8 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include "myHexdump.h"
-
-unsigned opened_files_counter;
+#include "myStdlib.h"
 
 int printFile(FILE * file)
 {
@@ -21,7 +19,7 @@ int printFile(FILE * file)
 
 int checkLargerFile(FILE * file1, FILE * file2)
 {
-  if (feof(file1) && !feof(file2))
+  if (!feof(file1) && feof(file2))
   {
     printf("The first file is larger.\n");
     if (!printFile(file1))
@@ -30,7 +28,7 @@ int checkLargerFile(FILE * file1, FILE * file2)
       return 0;
     }
   }
-  else if (!feof(file1) && feof(file2))
+  else if (feof(file1) && !feof(file2))
   {
     printf("The second file is larger.\n");
     if (!printFile(file2))
@@ -86,13 +84,13 @@ int main(int argc, char * argv [])
     fprintf(stderr, "Failed to open the first file.\nExiting...\n");
     exit(EXIT_FAILURE);
   }
-  opened_files_counter++;
+  OPENED_FILES_COUNTER++;
   if ((file2 = fopen(argv [2], "r")) == NULL)
   {
     fprintf(stderr, "Failed to open the second file.\nExiting...");
     exit(EXIT_FAILURE);
   }
-  opened_files_counter++;
+  OPENED_FILES_COUNTER++;
 
   if (!compareFiles(file1, file2))
   {
@@ -105,7 +103,7 @@ int main(int argc, char * argv [])
   }
   else
   {
-    opened_files_counter--;
+    OPENED_FILES_COUNTER--;
   }
   if (fclose(file2))
   {
@@ -113,9 +111,9 @@ int main(int argc, char * argv [])
   }
   else
   {
-    opened_files_counter--;
+    OPENED_FILES_COUNTER--;
   }
 
-  printf("Execution ended;\nUnclosed files: %d\nExiting...\n", opened_files_counter);
+  printf("Execution ended;\nUnclosed files: %d\nExiting...\n", OPENED_FILES_COUNTER);
   return 0;
 }

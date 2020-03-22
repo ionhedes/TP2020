@@ -1,8 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-
-unsigned malloc_counter, opened_files_counter;
+#include "myStdlib.h"
 
 void freeMat(int ** mat, const int * line_no)
 {
@@ -10,10 +7,10 @@ void freeMat(int ** mat, const int * line_no)
   for (i = 0; i < *line_no; i++)
   {
     free(mat [i]);
-    malloc_counter--;
+    MALLOC_COUNTER--;
   }
   free(mat);
-  malloc_counter--;
+  MALLOC_COUNTER--;
 }
 
 char * getString(FILE * stream)
@@ -29,13 +26,13 @@ char * getString(FILE * stream)
     {
       fprintf(stderr, "getString() error...\n");
       free(string);
-      malloc_counter--;
+      MALLOC_COUNTER--;
       return NULL;
     }
     string = aux;
 
-    //malloc_counter should only be increased once, on the first iteration
-    malloc_counter += (!length ? 1 : 0);
+    //MALLOC_COUNTER should only be increased once, on the first iteration
+    MALLOC_COUNTER += (!length ? 1 : 0);
     *(string + length) = buffer_char;
     length++;
   }
@@ -61,7 +58,7 @@ int getInt(int * location, int (* validationFunction)(char * number), FILE * str
     do
     {
       free(aux_element);
-      malloc_counter--;
+      MALLOC_COUNTER--;
       printf("\t ! Enter a valid integer: ");
       if ((aux_element = getString(stream)) == NULL)
       {
@@ -72,7 +69,7 @@ int getInt(int * location, int (* validationFunction)(char * number), FILE * str
   }
   *location = atoi(aux_element);
   free(aux_element);
-  malloc_counter--;
+  MALLOC_COUNTER--;
   return 1;
 }
 
@@ -101,7 +98,7 @@ int ** createMatrix(const int * line_no, const int * column_no)
   {
     return NULL;
   }
-  malloc_counter++;
+  MALLOC_COUNTER++;
 
   for (i = 0; i < *line_no; i++)
   {
@@ -110,7 +107,7 @@ int ** createMatrix(const int * line_no, const int * column_no)
       freeMat(mat, &i);
       return NULL;
     }
-    malloc_counter++;
+    MALLOC_COUNTER++;
   }
   return mat;
 }
@@ -144,7 +141,7 @@ int fillMatrixBinaryFile(int ** mat, const int * line_no, const int * column_no,
     fprintf(stderr, "Failed to open file.\n");
     return 0;
   }
-  opened_files_counter++;
+  OPENED_FILES_COUNTER++;
 
   if (fseek(storage_file, 8, SEEK_CUR) == -1)
   {
@@ -152,7 +149,7 @@ int fillMatrixBinaryFile(int ** mat, const int * line_no, const int * column_no,
     {
       fprintf(stderr, "Failed to close file.\n");
     }
-    opened_files_counter--;
+    OPENED_FILES_COUNTER--;
     return 0;
   }
 
@@ -165,7 +162,7 @@ int fillMatrixBinaryFile(int ** mat, const int * line_no, const int * column_no,
       {
         fprintf(stderr, "Failed to close file.\n");
       }
-      opened_files_counter--;
+      OPENED_FILES_COUNTER--;
       return 0;
     }
 
@@ -173,9 +170,9 @@ int fillMatrixBinaryFile(int ** mat, const int * line_no, const int * column_no,
 
   if (fclose(storage_file))
   {
-    fprintf(stderr, "Failed to close file.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+    fprintf(stderr, "Failed to close file.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
   }
-  opened_files_counter--;
+  OPENED_FILES_COUNTER--;
 
   return 1;
 }
@@ -206,7 +203,7 @@ int writeMatrixToFile(int ** mat, const int * line_no, const int * column_no, co
     fprintf(stderr, "Failed to open file.\n");
     return 0;
   }
-  opened_files_counter++;
+  OPENED_FILES_COUNTER++;
 
   if (fwrite(line_no, sizeof(int), 1, storage_file) != 1 ||
       fwrite(column_no, sizeof(int), 1, storage_file) != 1)
@@ -216,7 +213,7 @@ int writeMatrixToFile(int ** mat, const int * line_no, const int * column_no, co
     {
       fprintf(stderr, "Failed to close file.\n");
     }
-    opened_files_counter--;
+    OPENED_FILES_COUNTER--;
     return 0;
   }
 
@@ -229,7 +226,7 @@ int writeMatrixToFile(int ** mat, const int * line_no, const int * column_no, co
       {
         fprintf(stderr, "Failed to close file.\n");
       }
-      opened_files_counter--;
+      OPENED_FILES_COUNTER--;
       return 0;
     }
   }
@@ -239,7 +236,7 @@ int writeMatrixToFile(int ** mat, const int * line_no, const int * column_no, co
     fprintf(stderr, "Failed to close file.\n");
     return 0;
   }
-  opened_files_counter--;
+  OPENED_FILES_COUNTER--;
 
   return 1;
 }
@@ -271,7 +268,7 @@ int main(int argc, char * argv [])
     printf("The line number given as a parameter is not valid.\nPlease input another one: ");
     if (!getInt(&line_no, isValidInteger, stdin))
     {
-      fprintf(stderr, "Error when reading the line number.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+      fprintf(stderr, "Error when reading the line number.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
       exit(EXIT_FAILURE);
     }
   }
@@ -285,7 +282,7 @@ int main(int argc, char * argv [])
     printf("The column number given as a parameter is not valid.\nPlease input another one: ");
     if (!getInt(&column_no, isValidInteger, stdin))
     {
-      fprintf(stderr, "Error when reading the column number.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+      fprintf(stderr, "Error when reading the column number.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
       exit(EXIT_FAILURE);
     }
   }
@@ -296,7 +293,7 @@ int main(int argc, char * argv [])
 
   if ((mat = createMatrix(&line_no, &column_no)) == NULL)
   {
-    fprintf(stderr, "Failed to create matrix.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+    fprintf(stderr, "Failed to create matrix.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
     exit(EXIT_FAILURE);
   }
 
@@ -307,7 +304,7 @@ int main(int argc, char * argv [])
     if (!getInt(&option, isValidInteger, stdin))
     {
       freeMat(mat, &line_no);
-      fprintf(stderr, "Error when reading the user's choice.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+      fprintf(stderr, "Error when reading the user's choice.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
       exit(EXIT_FAILURE);
     }
 
@@ -320,14 +317,14 @@ int main(int argc, char * argv [])
         if (!fillMatrixTextFile(mat, &line_no, &column_no, stdin))
         {
           freeMat(mat, &line_no);
-          fprintf(stderr, "Failed to populate matrix.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+          fprintf(stderr, "Failed to populate matrix.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
           exit(EXIT_FAILURE);
         }
         putchar('\n');
         if (!writeMatrixToFile(mat, &line_no, &column_no, argv [3]))
         {
           freeMat(mat, &line_no);
-          fprintf(stderr, "Failed to write matrix to file.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+          fprintf(stderr, "Failed to write matrix to file.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
           exit(EXIT_FAILURE);
         }
 
@@ -340,7 +337,7 @@ int main(int argc, char * argv [])
         if (!fillMatrixBinaryFile(mat, &line_no, &column_no, argv [3]))
         {
           freeMat(mat, &line_no);
-          fprintf(stderr, "Failed to write matrix to file.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+          fprintf(stderr, "Failed to write matrix to file.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
           exit(EXIT_FAILURE);
         }
         putchar('\n');
@@ -357,7 +354,7 @@ int main(int argc, char * argv [])
       default:
       {
         freeMat(mat, &line_no);
-        fprintf(stderr, "Runtime exception caught.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+        fprintf(stderr, "Runtime exception caught.\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
         exit(EXIT_FAILURE);
       }
     }
@@ -366,6 +363,6 @@ int main(int argc, char * argv [])
   while (option != 3);
 
   freeMat(mat, &line_no);
-  printf("Execution ended successfully;\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", malloc_counter, opened_files_counter);
+  printf("Execution ended successfully;\nUnreleased memory blocks: %d;\nUnclosed files: %d\nExiting...\n", MALLOC_COUNTER, OPENED_FILES_COUNTER);
   return 0;
 }
