@@ -1,7 +1,17 @@
+/**
+  Aplicația 5.7: Un program primește în linia de comandă un nume de fișier,
+                 un offset dat în hexazecimal și apoi o serie de octeți,
+                 specificați tot în hexazecimal. Programul va scrie în fișierul
+                 specificat, începând de la offsetul dat toți octeții primiți
+                 în linia de comandă. Restul fișierului va rămâne nemodificat.
+  Exemplu: ./inlocuire 1.dat 4a0f 9e b0 51    -> scrie octeții {9e, b0, 51} în fișierul 1.dat, începând cu poziția 4a0f
+*/
+
 #include <stdio.h>
 #include <errno.h>
 #include "myStdlib.h"
 
+// Function to extract the address to write at from argv[i]
 int extractAddress(char * addr_sform, long * addr_iform)
 {
   long aux_integer;
@@ -24,6 +34,8 @@ int extractAddress(char * addr_sform, long * addr_iform)
   return 1;
 }
 
+// Function to extract the byte sequence to write from argv[i] and put it inside
+// unsigned an char array
 int extractBytes(char ** bytes_strform, const int bytes_no, unsigned char * bytes_intform)
 {
   long aux_integer;
@@ -74,7 +86,7 @@ int writeInFile(FILE * file, long * address, const unsigned char * bytes, const 
 
 int findSequence(FILE * file, const unsigned char * bytes, const int bytes_no)
 {
-  long position
+  long position;
   unsigned char buffer [bytes_no];
   while(!feof(file))
   {
@@ -96,10 +108,16 @@ int findSequence(FILE * file, const unsigned char * bytes, const int bytes_no)
 
 int main(int argc, char * argv [])
 {
-  FILE * file = NULL;
-  unsigned char * bytes = NULL;
-  long address;
+  FILE * file = NULL; // < file handler
+  unsigned char * bytes = NULL; // < the string with the bytes to be written
+  long address; // < address to write them at
 
+  /* Number of args must be higher than 2:
+      - the name of the program
+      - the name of the file to write to
+      - the address where to write in the file
+      - sequence of bits to be written
+  */
   if (argc < 3)
   {
     fprintf(stderr, "Invalid number of parameters.\nExiting...\n");
