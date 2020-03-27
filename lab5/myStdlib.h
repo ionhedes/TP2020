@@ -76,7 +76,7 @@ char * getString(FILE * stream)
     - 1 - the string contains a valid integer
     - 0 - the string doesn't contain a valid integer
 */
-int isValidInteger(char * number)
+int isValidInt(char * number)
 {
   char * iterator = number; // < Pointer to go char-by-char
 
@@ -140,7 +140,7 @@ int isValidFloat(char * number)
   // checking the validity of an integer
   else
   {
-    if (!isValidInteger(number))
+    if (!isValidInt(number))
     {
       return 0;
     }
