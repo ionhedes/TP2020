@@ -2,6 +2,12 @@
   #include "myStdlib.h"
 #endif
 
+#if defined(DEBUG) || defined(_DEBUG)
+  #define DEB_PRT_ARRAY(type, array, array_size) printArray_##type(array, array_size)
+#else
+  #define DEB_PRT_ARRAY(type, array, array_size)
+#endif
+
 #define PLACEHOLDER_int "%d"
 #define PLACEHOLDER_float "%f"
 #define PLACEHOLDER_double "%lf"
@@ -22,8 +28,10 @@
   int fillArray_##type(type * array, const unsigned * array_size)              \
   {                                                                            \
     int i;                                                                     \
+    printf("Enter the elements of the array:\n");                              \
     for (i = 0; i < *array_size; i++)                                          \
     {                                                                          \
+      printf("\t - arr [%d]: ", i);                                            \
       if (!get_##type(&array [i] , stdin))                                     \
       {                                                                        \
         return 0;                                                              \
