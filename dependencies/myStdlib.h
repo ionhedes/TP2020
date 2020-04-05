@@ -9,14 +9,42 @@
 #include <string.h>
 #include <ctype.h>
 
+// Macro constant to be used in include guards in other programs
+// It being defined means this library is included
+#define MYSTDLIB_ON 1
+
 // The following global variables are used for debugging
 // They keep track of malloc()/free() and fopen()/fclose() calls
 // Sadly, I could not find a better way of managing these
 unsigned MALLOC_COUNTER;
 unsigned OPENED_FILES_COUNTER;
 
-#define MYSTDLIB_ON 1
 
+// Macros used to convert different text to strings in the compilation phase
+#define STRINGIFY_AUX(text) #text
+#define STRINGIFY(text) STRINGIFY_AUX(text)
+
+// Debug intenteded macros
+/**
+  DEB - prints error messages to stderr, only in debug mode, mentioning the
+        file and line that produces an error
+*/
+#if defined(DEBUG) || defined(_DEBUG)
+  #define DEB(...) fprintf(stderr, __FILE__" ["STRINGIFY(__LINE__)"]: "__VA_ARGS__)
+#else
+  #define DEB(...)
+#endif
+
+// Functionality intended macros
+/*
+  USAGE:
+    - used internally by the functions inside this library
+    - they simplify the external calls needed to be made to the internal functions
+    - e.g.: without these, you would need to know which validation and conversion
+            functions to use for each data type; with them, the argument lists of
+            these functions is skinned down, because the functions know what other
+            functions to call for validation and conversion
+*/
 #define VALIDATION_FUNC_int isValidInt
 #define VALIDATION_FUNC_unsigned isValidUnsigned
 #define VALIDATION_FUNC_float isValidFloat
@@ -28,18 +56,6 @@ unsigned OPENED_FILES_COUNTER;
 #define CONVERSION_FUNC_float atof
 #define CONVERSION_FUNC_double atof
 #define CONVERSION_FUNC(type) CONVERSION_FUNC_##type
-
-#define create_array_allocator(type)                                           \
-  type * createArray_##type(const unsigned * array_size)                       \
-  {                                                                            \
-    type * array = NULL;                                                       \
-    if ((array = (type *)malloc(*array_size * sizeof(type))) == NULL)          \
-    {                                                                          \
-      return NULL;                                                             \
-    }                                                                          \
-    MALLOC_COUNTER++;                                                          \
-    return array;                                                                \
-  }
 
 
 
