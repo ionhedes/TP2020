@@ -104,7 +104,7 @@ unsigned OPENED_FILES_COUNTER;
       {                                                                                                     \
         free(aux_element);                                                                                  \
         MALLOC_COUNTER--;                                                                                   \
-        printf("\t ! Enter a valid integer: ");                                                             \
+        printf("\t ! Enter a valid value: ");                                                               \
         if ((aux_element = getString(stream)) == NULL)                                                      \
         {                                                                                                   \
           return 0;                                                                                         \
