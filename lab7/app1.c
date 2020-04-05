@@ -7,25 +7,35 @@
                  nicio altă funcție.
 */
 
+#include <stdio.h>
+#include "myStdlib.h"
+
+/**
+    - If the IMPLICIT macro is defined, the absolute value of real numbers is to
+    be calculated using the method defined inside math.h
+    - Else, we define an inline function for computing the absolute value of a
+    real number
+*/
 #ifdef IMPLICIT
-  #include <math.h>
+  #include <math.h> // < no use including if we do not use fabs()
   #define abs_real(x) fabs(x)
 #else
   #define abs_real(x) ((x) >= 0 ? (x) : (-(x)))
 #endif
-#include <stdio.h>
-#include "myStdlib.h"
 
+
+// Driver program for calculating absolute values
 int main()
 {
-  double num;
+  double num; // < variable for a real number
   printf("Enter a number: ");
-  if (!get_double(&num, stdin))
+  if (!get_double(&num, stdin)) // < reading a double value using get_double
   {
-    fprintf(stderr, "Input error.\n");
+    DEB("Input error.\n"); // < treating input errors
+    printf("Exiting...\n");
     exit(EXIT_FAILURE);
   }
   printf("The absolute value of the number is: %lf;\n", abs_real(num));
-  fprintf(stderr, "Execution ended.\n");
+  printf("Execution ended.\n");
   return 0;
 }
