@@ -9,7 +9,6 @@
 #if defined(DEBUG) || defined(_DEBUG)
   #define DEB(...) fprintf(stderr, __FILE__" ["STRINGIFY(__LINE__)"]: "__VA_ARGS__)
 #else
-  #define NDEBUG 1 // < Switch for assert()
   #define DEB(...)
 #endif
 
