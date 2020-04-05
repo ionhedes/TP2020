@@ -3,15 +3,6 @@
 #include "myStdlib.h"
 #include "arrayHandler.h"
 
-#define STRINGIFY_AUX(text) #text
-#define STRINGIFY(text) STRINGIFY_AUX(text)
-
-#if defined(DEBUG) || defined(_DEBUG)
-  #define DEB(...) fprintf(stderr, __FILE__" ["STRINGIFY(__LINE__)"]: "__VA_ARGS__)
-#else
-  #define DEB(...)
-#endif
-
 create_array_handler(int)
 
 int isFound(const int * value, int * array, unsigned * array_size)
