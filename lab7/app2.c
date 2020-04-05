@@ -45,19 +45,22 @@ int main()
   printf("Enter the number of elements the array will have: ");
   if (!get_unsigned(&array_size, stdin))
   {
-    fprintf(stderr, "Error when reading the number of array elements.\nExiting...\n");
+    DEB("Error when reading the number of array elements.\n");
+    printf("Exiting...\n");
     exit(EXIT_FAILURE);
   }
   if ((array = createArray_double(&array_size)) == NULL)
   {
-    fprintf(stderr, "Error when allocating memory for the array.\nExiting...\n");
+    DEB("Error when allocating memory for the array.\n");
+    printf("Exiting...\n");
     exit(EXIT_FAILURE);
   }
   if (!fillArray_double(array, &array_size))
   {
     free(array);
     MALLOC_COUNTER--;
-    fprintf(stderr, "Error when filling the array.\nExiting...\n");
+    DEB("Error when filling the array.\n");
+    printf("Exiting...\n");
     exit(EXIT_FAILURE);
   }
 
@@ -65,6 +68,8 @@ int main()
 
   free(array);
   MALLOC_COUNTER--;
-  DEB("Execution ended.\nUnreleased memory blocks: %d;\nExiting...\n", MALLOC_COUNTER);
+  printf("Execution ended.\n");
+  DEB("Unreleased memory blocks: %d;\n", MALLOC_COUNTER);
+  printf("Exiting...\n");
   return 0;
 }
