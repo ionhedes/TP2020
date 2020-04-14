@@ -68,9 +68,9 @@ char * getString()
   // Strings are considered to span until \n
   while ((buffer_char = getchar()) != '\n')
   {
-    if ((aux = (char *)realloc(string, (length +  1) * sizeof(char))) == NULL)
+    if ((aux = (char *)realloc(string, (length + 1) * sizeof(char))) == NULL)
     {
-      fprintf(stderr, "getString() error..\nUnreleased memory blocks: %d\n", malloc_counter);
+      fprintf(stderr, "getString() error..\n");
       free(string);
       malloc_counter--;
       return NULL;

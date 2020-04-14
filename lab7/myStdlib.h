@@ -9,11 +9,54 @@
 #include <string.h>
 #include <ctype.h>
 
+// Macro constant to be used in include guards in other programs
+// It being defined means this library is included
+#define MYSTDLIB_ON 1
+
 // The following global variables are used for debugging
 // They keep track of malloc()/free() and fopen()/fclose() calls
 // Sadly, I could not find a better way of managing these
 unsigned MALLOC_COUNTER;
 unsigned OPENED_FILES_COUNTER;
+
+
+// Macros used to convert different text to strings in the compilation phase
+#define STRINGIFY_AUX(text) #text
+#define STRINGIFY(text) STRINGIFY_AUX(text)
+
+// Debug intenteded macros
+/**
+  DEB - prints error messages to stderr, only in debug mode, mentioning the
+        file and line that produces an error
+*/
+#if defined(DEBUG) || defined(_DEBUG)
+  #define DEB(...) fprintf(stderr, __FILE__" ["STRINGIFY(__LINE__)"]: "__VA_ARGS__)
+#else
+  #define DEB(...)
+#endif
+
+// Functionality intended macros
+/*
+  USAGE:
+    - used internally by the functions inside this library
+    - they simplify the external calls needed to be made to the internal functions
+    - e.g.: without these, you would need to know which validation and conversion
+            functions to use for each data type; with them, the argument lists of
+            these functions is skinned down, because the functions know what other
+            functions to call for validation and conversion
+*/
+#define VALIDATION_FUNC_int isValidInt
+#define VALIDATION_FUNC_unsigned isValidUnsigned
+#define VALIDATION_FUNC_float isValidFloat
+#define VALIDATION_FUNC_double isValidDouble
+#define VALIDATION_FUNC(type) VALIDATION_FUNC_##type
+
+#define CONVERSION_FUNC_int atoi
+#define CONVERSION_FUNC_unsigned atoi
+#define CONVERSION_FUNC_float atof
+#define CONVERSION_FUNC_double atof
+#define CONVERSION_FUNC(type) CONVERSION_FUNC_##type
+
 
 
 // Macro to generate a function to check, cast and store the string given by getString() into
@@ -45,8 +88,7 @@ unsigned OPENED_FILES_COUNTER;
 */
 
 #define generate_input_function(type)                                                                       \
-  int get_##type(type * location, int (* validationFunction)(char * number),                                \
-                 type (* conversionFunction)(const char * number), FILE * stream)                           \
+  int get_##type(type * location, FILE * stream)                                                            \
   {                                                                                                         \
     char * aux_element = NULL; /* < buffer string spanning only this function */                            \
                                                                                                             \
@@ -56,26 +98,26 @@ unsigned OPENED_FILES_COUNTER;
     {                                                                                                       \
       return 0;                                                                                             \
     }                                                                                                       \
-    if (!validationFunction(aux_element))                                                                   \
+    if (!VALIDATION_FUNC(type)(aux_element))                                                                \
     {                                                                                                       \
       do                                                                                                    \
       {                                                                                                     \
         free(aux_element);                                                                                  \
         MALLOC_COUNTER--;                                                                                   \
-        printf("\t ! Enter a valid integer: ");                                                             \
+        printf("\t ! Enter a valid value: ");                                                               \
         if ((aux_element = getString(stream)) == NULL)                                                      \
         {                                                                                                   \
           return 0;                                                                                         \
         }                                                                                                   \
       }                                                                                                     \
-      while (!validationFunction(aux_element));                                                             \
+      while (!VALIDATION_FUNC(type)(aux_element));                                                          \
     }                                                                                                       \
     /* When a valid int is eventually given, cast it and store it in the desired                            \
-    location*/                                                                                             \
-    *location = conversionFunction(aux_element);                                                            \
+    location*/                                                                                              \
+    *location = CONVERSION_FUNC(type)(aux_element);                                                         \
                                                                                                             \
     /* Free the string generated by getString(), now that the int is safely placed                          \
-    in its desired location*/                                                                              \
+    in its desired location*/                                                                               \
     free(aux_element);                                                                                      \
     MALLOC_COUNTER--;                                                                                       \
     return 1;                                                                                               \
@@ -133,6 +175,30 @@ char * getString(FILE * stream)
   return string;
 }
 
+// Function to parse a string that should contain an unsigned integer
+/*
+  ARGUMENTS:
+    -   char * number - the input string to be parsed
+
+  RETURN VALUE:
+    - 1 - the string contains a valid unsigned integer
+    - 0 - the string doesn't contain a valid unsigned integer
+*/
+int isValidUnsigned(char * number)
+{
+  char * iterator = number; // < Pointer to go char-by-char
+
+  for (; *iterator != '\0'; iterator++)
+  {
+    // Any nondigit char found means the string isn't a valid unsigned integer
+    if (!isdigit(*iterator))
+    {
+      return 0;
+    }
+  }
+  return 1;
+}
+
 // Function to parse a string that should contain an integer
 /*
   ARGUMENTS:
@@ -151,13 +217,12 @@ int isValidInt(char * number)
   {
     iterator++;
   }
-  for (; *iterator != '\0'; iterator++)
+
+  // After skipping the minus sign, if it exists, the problem reduces itself to
+  // checking the validity of an unsigned
+  if (!isValidUnsigned(iterator))
   {
-    // Any nondigit char found means the string isn't a valid integer
-    if (!isdigit(*iterator))
-    {
-      return 0;
-    }
+    return 0;
   }
   return 1;
 }
@@ -172,6 +237,59 @@ int isValidInt(char * number)
     - 0 - the string doesn't contain a valid float
 */
 int isValidFloat(char * number)
+{
+  char * iterator = number; // < Pointer to go char-by-char
+  char * point_location = strchr(number, '.'); // Pointer to the address of the
+                                               // point inside the number
+                                               // - if it exists
+
+  // If the number is negative, we skip its sign
+  if (*iterator == '-')
+  {
+    iterator++;
+  }
+  if (point_location)
+  {
+    // Checking the chars before the point
+    for (; iterator < point_location ; iterator++)
+    {
+      if (!isdigit(*iterator))
+      {
+        return 0;
+      }
+    }
+    // Checking the chars after the point
+    for (iterator = point_location + 1; *iterator != '\0'; iterator++)
+    {
+      if (!isdigit(*iterator))
+      {
+        return 0;
+      }
+    }
+  }
+  // If the string doesn't contain a point, the problem reduces itself to
+  // checking the validity of an integer
+  else
+  {
+    if (!isValidInt(number))
+    {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+// Function to parse a string that should contain a double precision floating
+// point number
+/*
+  ARGUMENTS:
+    -   char * number - the input string to be parsed
+
+  RETURN VALUE:
+    - 1 - the string contains a valid double
+    - 0 - the string doesn't contain a valid double
+*/
+int isValidDouble(char * number)
 {
   char * iterator = number; // < Pointer to go char-by-char
   char * point_location = strchr(number, '.'); // Pointer to the address of the
@@ -262,3 +380,4 @@ int isValidHexByte(char * number)
 generate_input_function(int)
 generate_input_function(float)
 generate_input_function(double)
+generate_input_function(unsigned)

@@ -12,6 +12,16 @@
 #include <stdarg.h>
 #include "myStdlib.h"
 
+// Function to concatenate strings found inside the variable argument list
+/*
+  USAGE:
+    - use it to concatenate n strings inside a newly allocated string
+    - spaces will be put between each word
+
+  ARGUMENTS:
+    - unsigned n - number of string to be concatenated
+    - the rest of the arguments will be the strings to be concatenated
+*/
 char * concat(unsigned n, ...)
 {
   int i;
@@ -22,6 +32,8 @@ char * concat(unsigned n, ...)
   va_list var_args;
   va_start(var_args, n);
 
+  // Initialize the resulting string, and put a '\0' inside, so strcat()
+  // can be used with it
   if ((concat_string = (char *)malloc(sizeof(char))) == NULL)
   {
     DEB("Failed to initialize concatenated string.\n");
@@ -33,36 +45,47 @@ char * concat(unsigned n, ...)
   for (i = 0; i < n; i++)
   {
     current_string = va_arg(var_args, char *);
-    concat_string_size += strlen(current_string);
-    //resize and concat
+    concat_string_size += strlen(current_string); // < Before adding a new string,
+                                                  // adjust the size of the resulting
+                                                  // string
 
+    // Resize the resulting array according to the adjusted array size
     if ((aux_string = (char *)realloc(concat_string, (concat_string_size + 2) * sizeof(char))) == NULL)
     {
       DEB("Failed resizing array at step %d.\n", i + 1);
       free(concat_string);
       MALLOC_COUNTER--;
-      return NULL;
+      return NULL; // < In case of realloc() error, return NULL
     }
     concat_string = aux_string;
+
+    // After the resizings have been done, concatenate the current parsed string
+    // to the resulting one
     strcat(concat_string, current_string);
     strcat(concat_string, " ");
   }
 
   va_end(var_args);
-  return concat_string;
+  return concat_string; // < Return a pointer to the resulting concatenated string
 }
 
+// Driver program for the concatenation function
 int main()
 {
+  // Needed variable
   char * concat_string = NULL;
+
+  // Call the concatenation function with a set of data
+  // I am lazy again, I am sorry
   if ((concat_string = concat(3, "Ion", "si", "Ana")) == NULL)
   {
-    fprintf(stderr, "Error when concatenating strings.\n");
+    fprintf(stderr, "Error when concatenating strings.\n"); // < treat concat errors
     exit(EXIT_FAILURE);
   }
   printf("The string concatenated strings result the following message:\n%s\n",
          concat_string);
 
+  // Free the memory and end execution
   free(concat_string);
   MALLOC_COUNTER--;
   printf("Execution ended.\n");
