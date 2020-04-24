@@ -98,6 +98,32 @@
     return list;                                                               \
   }                                                                            \
                                                                                \
+  Node_##type * createList_##type(const unsigned * list_size)                  \
+  {                                                                            \
+    int i;                                                                     \
+    type buf;                                                                  \
+    Node_##type * list = NULL;                                                 \
+                                                                               \
+    printf("Enter the elements of the list:\n");                               \
+    for (i = 0; i < *list_size; i++)                                           \
+    {                                                                          \
+      printf("\t - element %d: ", i);                                          \
+      if (!get_##type(&buf, stdin))                                            \
+      {                                                                        \
+        DEB("\n\t - failed to read element %d of the list;", i);               \
+        return NULL;                                                           \
+      }                                                                        \
+      if ((list = addFirst_##type(list, &buf)) == NULL)                        \
+      {                                                                        \
+        DEB("\n\t - failed to store element list[%d] = "                       \
+             PLACEHOLDER(type)" into the list;", i, buf);                      \
+        return NULL;                                                           \
+      }                                                                        \
+    }                                                                          \
+                                                                               \
+    return list;                                                               \
+  }                                                                            \
+                                                                               \
   void printList_##type(Node_##type * list)                                    \
   {                                                                            \
     Node_##type * iter = NULL;                                                 \
@@ -107,4 +133,15 @@
       printf(""PLACEHOLDER(type)", ", iter->info);                             \
     }                                                                          \
     putchar('\n');                                                             \
+  }                                                                            \
+                                                                               \
+  unsigned getSizeList_##type(const Node_##type * list)                        \
+  {                                                                            \
+    unsigned size = 0;                                                         \
+    const Node_##type * iter = NULL;                                           \
+    for (iter = list; iter != NULL; iter = iter->next)                         \
+    {                                                                          \
+      size++;                                                                  \
+    }                                                                          \
+    return size;                                                               \
   }
