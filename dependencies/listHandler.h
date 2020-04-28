@@ -62,6 +62,8 @@ USAGE:
   - these functions only cover lists that only store their beginning address.
     For lists storing both beginning and ending addresses, you can write your
     own stuff based on this
+  - this will create a data type, with the name Node_, succeeded by the data type
+    of the information field of the node
 
 ARGUMENTS:
   - type - one of the currently supported data types:
