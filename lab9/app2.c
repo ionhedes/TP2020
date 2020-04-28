@@ -41,7 +41,7 @@ Node_int * invertList(Node_int * list)
   {
     next = current->next; // < It is necessary to only assign the next pointer here.
                           //   Else, we may try to access null->next,
-                          //   which will give segfault();
+                          //   which will give segfault;
     current->next = previous; // < Reversing the link;
     previous = current;
     current = next;
