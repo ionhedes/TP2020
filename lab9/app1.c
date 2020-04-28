@@ -96,7 +96,7 @@ int main()
   {
     // Treating input or allocation errors
     fprintf(stderr, "The creation of the second list failed.\nExiting...\n");
-    freeList_int(list); // < Releasing the first list before aborting exe.
+    freeList_int(list1); // < Releasing the first list before aborting exe.
     exit(EXIT_FAILURE);
   }
   putchar('\n');
