@@ -1,10 +1,33 @@
+/**
+  Aplicația 9.1: Să se scrie o funcție care primește două liste și returnează 1
+                 dacă ele sunt identice, altfel 0.
+*/
+
 #include <stdio.h>
 #include "myStdlib.h"
 #include "listHandler.h"
 
+// Call the list handler creation macro for the int type
+// Check listHandler.h for details
 create_list_handler(int)
 
-int areIdenticalLists(Node_int * list1, Node_int * list2)
+// Function to check if two lists are identical
+/**
+  USAGE:
+    - equality function for lists;
+
+  ARGUMENTS:
+    - const Node_int * list1 - the first list;
+    - const Node_int * list2 - the second list;
+
+  RETURN VALUE:
+    - 1 - the lists are identical;
+    - 0 - the lists are diferent;
+
+  SIDE EFFECTS:
+    - no outside values will be modified by this function
+*/
+int areIdenticalLists(const Node_int * list1, const Node_int * list2)
 {
   const Node_int * iter1 = NULL;
   const Node_int * iter2 = NULL;
@@ -32,46 +55,56 @@ int areIdenticalLists(Node_int * list1, Node_int * list2)
   return 1;
 }
 
+// Driver program for the aforementioned function
 int main()
 {
+  // Necessary variables for the two lists
   unsigned list1_size = 0;
   unsigned list2_size = 0;
   Node_int * list1 = NULL;
   Node_int * list2 = NULL;
 
+  // Creating & filling the first list
   printf("Enter the desired size of the first list: ");
   if (!get_unsigned(&list1_size, stdin))
   {
+    // Treating input errors
     fprintf(stderr, "Input error when reading the first list's size.\nExiting...\n");
     exit(EXIT_FAILURE);
   }
   if ((list1 = createList_int(&list1_size)) == NULL)
   {
+    // Treating input or allocation errors
     fprintf(stderr, "The creation of the first list failed.\nExiting...\n");
     exit(EXIT_FAILURE);
   }
   putchar('\n');
-  printList_int(list1);
+  printList_int(list1); // < Printing the list to check if all went good
 
   putchar('\n');
 
+  // Creating & filling the second list
   printf("Enter the desired size of the second list: ");
   if (!get_unsigned(&list2_size, stdin))
   {
+    // Treating input errors
     fprintf(stderr, "Input error when reading the second list's size.\nExiting...\n");
-    freeList_int(list1);
+    freeList_int(list1); // < Releasing the first list before aborting exe.
     exit(EXIT_FAILURE);
   }
   if ((list2 = createList_int(&list2_size)) == NULL)
   {
+    // Treating input or allocation errors
     fprintf(stderr, "The creation of the second list failed.\nExiting...\n");
-    freeList_int(list2);
+    freeList_int(list); // < Releasing the first list before aborting exe.
     exit(EXIT_FAILURE);
   }
   putchar('\n');
-  printList_int(list2);
+  printList_int(list2); // < Printing the list to check if all went good
 
   putchar('\n');
+
+  // Running the tested function
   if (areIdenticalLists(list1, list2))
   {
     printf("The lists are identical.\n");
@@ -83,6 +116,7 @@ int main()
 
   putchar('\n');
 
+  // Free the memory and end execution
   freeList_int(list1);
   freeList_int(list2);
   printf("Execution ended.\n");
