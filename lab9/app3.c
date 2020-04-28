@@ -160,7 +160,7 @@ int main()
     exit(EXIT_FAILURE);
   }
   putchar('\n');
-  printList_int(list2);  // < Printing the list to check if all went good
+  printList_int(list2); // < Printing the list to check if all went good
 
   putchar('\n');
 
