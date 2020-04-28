@@ -67,7 +67,7 @@ Node_int * reuniteLists(Node_int * list1, Node_int * list2)
 
     if (!belongsToList(reunited_list, current_element) && !belongsToList(list2, current_element))
     {
-      if ((reunited_list = addFirst_int(reunited_list, &current_element)) == NULL)
+      if ((reunited_list = OAF(int, reunited_list, &current_element)) == NULL)
       {
         DEB("Failed to add element from the first list to the reunited list.\n");
         return NULL;
@@ -85,7 +85,7 @@ Node_int * reuniteLists(Node_int * list1, Node_int * list2)
 
     if (!belongsToList(reunited_list, current_element))
     {
-      if ((reunited_list = addFirst_int(reunited_list, &current_element)) == NULL)
+      if ((reunited_list = OAF(int, reunited_list, &current_element)) == NULL)
       {
         DEB("Failed to add element from the second list to the reunited list.\n");
         return NULL;

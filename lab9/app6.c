@@ -15,7 +15,7 @@ Node_int * insertInSortedList(Node_int * sorted_list, const int * element)
   {
     DEB("\t - the given sorted list is empty;\n");
     DEB("\t - returning a singleton with our element as sole value;\n");
-    return addFirst_int(sorted_list, element);
+    return OAF(int, sorted_list, element);
   }
   DEB("\t - finding the position for the element to be inserted;\n");
   while(current && current->info > *element) // mandatory for current to be first inside the condition // segfault otherwise
@@ -25,7 +25,7 @@ Node_int * insertInSortedList(Node_int * sorted_list, const int * element)
     current = current->next;
   }
   DEB("\t - the element must be inserted at address %p;\n", current);
-  if ((aux = addFirst_int(current, element)) == NULL)
+  if ((aux = OAF(int, current, element)) == NULL)
   {
     DEB("\t - adding the element failed due to an exception in memory allocation.\n");
     freeList_int(sorted_list);

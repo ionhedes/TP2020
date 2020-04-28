@@ -11,17 +11,24 @@ int areIdenticalLists(Node_int * list1, Node_int * list2)
 
   if (getSizeList_int(list1) != getSizeList_int(list2))
   {
+    DEB("The two lists have different sizes, so they are different.\n");
     return 0;
   }
 
+  DEB("Iterating to check for different values:\n");
   for (iter1 = list1, iter2 = list2; (iter1 != NULL) && (iter2 != NULL); iter1 = iter1->next, iter2 = iter2->next)
   {
+    DEB("\t - current values:\n");
+    DEB("\t\t - list1: %d;\n", iter1->info);
+    DEB("\t\t - list2: %d;\n", iter2->info);
     if (iter1->info != iter2->info)
     {
+      DEB("\t\t - the elements are different;\n");
+      DEB("Done.\n");
       return 0;
     }
   }
-
+  DEB("Done!\n");
   return 1;
 }
 

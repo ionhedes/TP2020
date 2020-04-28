@@ -32,7 +32,7 @@ List_int * createSList_int(const unsigned * list_size)
       DEB("\n\t - failed to read element %d of the list;", i);
       return NULL;
     }
-    if ((list->head = addFirst_int(list->head, &buf)) == NULL)
+    if ((list->head = OAF(int, list->head, &buf)) == NULL)
     {
       DEB("\n\t - failed to store element list[%d] = %d into the list;", i, buf);
       return NULL;
