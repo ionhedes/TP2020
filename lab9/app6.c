@@ -105,6 +105,9 @@ Node_int * insertInSortedList(Node_int * sorted_list, const int * element)
   RETURN VALUE:
     - success - a pointer to the new sorted list;
     - failure - null pointer;
+
+  SIDE EFFECTS:
+    - no outside values will be modified by this function;
 */
 Node_int * sortList(const Node_int * list)
 {

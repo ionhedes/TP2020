@@ -1,16 +1,58 @@
+/**
+  Aplicația 9.7: Pentru implementarea listei care memorează ultimul element,
+                 să se scrie o funcție care primește două liste sortate și
+                 returnează lista sortată care conține toate elementele lor.
+                 Pentru lista rezultată se va folosi doar operația de adăugare
+                 la sfârșit de listă.
+
+  Exemplu: {1, 2, 7, 8} și {2, 9} -> {1, 2, 2, 7, 8, 9}
+*/
+
 #include <stdio.h>
 #include "myStdlib.h"
 #include "listHandler.h"
 
+// Call the list handler creation macro for the int type
+// Check listHandler.h for details
 create_list_handler(int)
 
+/**
+    This program will use a different kind of lists, ones that also store the
+  address of their last node. For implementing these, we create a new struct
+  based on the stuff we already have inside listHandler.h.
+*/
 typedef struct
 {
   Node_int * head;
   Node_int * tail;
 } List_int;
 
-List_int * createSList_int(const unsigned * list_size)
+// Function to create a list that also hold the address of its last element
+/*
+  NOTE: TList = tail + list, I didn't find anything better;
+
+  USAGE:
+    - similar to createList_int(), only it works with lists that also hold the
+      address of the last element;
+    - this function is restricted to integer values and lists;
+
+  ARGUMENTS:
+    - const unsigned * list_size - pointer to the size of the desired list;
+
+  RETURN VALUE:
+    - success - pointer to the list structure;
+    - failure - null-pointer;
+
+  SIDE EFFECTS:
+    - no outside values will be modified by this function;
+
+  WARNING:
+    - please only use this function in programs that add nodes to a list using
+      the add first method, or else the tail of the list will not be properly set
+    - if you don't know what this is, you should check the first lines of
+      listHandler.h
+*/
+List_int * createTList_int(const unsigned * list_size)
 {
   int i;
   int buf;
@@ -46,12 +88,44 @@ List_int * createSList_int(const unsigned * list_size)
   return list;
 }
 
+// Function to join two sorted list into a resulting sorted list
+/**
+  USAGE:
+    - interclassing algorithm implemented for usage on integer simple linked
+      lists;
+    - this function creates a new TList from the initial lists while keeping the
+      elements ordered;
+
+  HOW IT WORKS:
+      - both of the lists are iterated at the same time, until one of them ends;
+      - for each step, the list with the currently smaller element gets iterated,
+        and the element stored in the resulting list;
+      - the rest of the remaining string is 'copied' in the resulting list;
+      - this has a linear time complexity;
+
+  ARGUMENTS:
+    - const List_int * list1 - the first list;
+    - const List_int * list2 - the second list;
+
+  RETURN VALUE:
+    - success - pointer to the joint list;
+    - failure - null pointer;
+
+  SIDE EFFECTS:
+    - no outside values will be modified by this function;
+
+  WARNING:
+    - please only use this function in programs that add nodes to a list using
+      the add last method, or else the tail of the list will not be properly set
+    - if you don't know what this is, you should check the first lines of
+      listHandler.h
+*/
 List_int * joinLists(const List_int * list1, const List_int * list2)
 {
   List_int * joint_list = NULL;
   Node_int * iter1 = list1->head;
   Node_int * iter2 = list2->head;
-  Node_int * tail = NULL;
+  Node_int * tail = NULL; // < Variable used to track the tail of the list
 
   if ((joint_list = (List_int *)malloc(sizeof(List_int))) == NULL)
   {
@@ -140,55 +214,67 @@ List_int * joinLists(const List_int * list1, const List_int * list2)
   return joint_list;
 }
 
+// Driver program for the list-joining function
 int main()
 {
+  // Necessary variables for the two lists
   List_int * list1 = NULL;
   List_int * list2 = NULL;
   List_int * joint_list = NULL;
   unsigned list1_size;
   unsigned list2_size;
 
+  // Creating & filling the first list
   printf("Enter the desired size of the first list: ");
   if (!get_unsigned(&list1_size, stdin))
   {
+    // Treating input errors
     fprintf(stderr, "Input error when reading the first list's size.\nExiting...\n");
     exit(EXIT_FAILURE);
   }
-  if ((list1 = createSList_int(&list1_size)) == NULL)
+  if ((list1 = createTList_int(&list1_size)) == NULL)
   {
+    // Treating input or allocation errors
     fprintf(stderr, "The creation of the first list failed.\nExiting...\n");
     exit(EXIT_FAILURE);
   }
   putchar('\n');
-  printList_int(list1->head);
+  printList_int(list1->head); // < Printing the list to check if all went good
 
+  // Creating & filling the second list
   printf("Enter the desired size of the second list: ");
   if (!get_unsigned(&list2_size, stdin))
   {
+    // Treating input errors
     fprintf(stderr, "Input error when reading the second list's size.\nExiting...\n");
     freeList_int(list1->head);
-    free(list1);
+    free(list1); // < Releasing the first list before aborting exe.
     MALLOC_COUNTER--;
     DEB("Unreleased memory blocks: %d;\n", MALLOC_COUNTER);
     printf("Exiting...\n");
     exit(EXIT_FAILURE);
   }
-  if ((list2 = createSList_int(&list2_size)) == NULL)
+  if ((list2 = createTList_int(&list2_size)) == NULL)
   {
+    // Treating input or allocation errors;
     fprintf(stderr, "The creation of the second list failed.\nExiting...\n");
     freeList_int(list2->head);
-    free(list1);
+    free(list1); // < Releasing the first list before aborting exe.
     MALLOC_COUNTER--;
     DEB("Unreleased memory blocks: %d;\n", MALLOC_COUNTER);
     printf("Exiting...\n");
     exit(EXIT_FAILURE);
   }
   putchar('\n');
-  printList_int(list2->head);
+  printList_int(list2->head); // < Printing the list to check if all went good
 
   putchar('\n');
+
+  // Running the tested function
+  // Joining the two functions...
   if ((joint_list = joinLists(list1, list2)) == NULL)
   {
+    // Treating function errors
     fprintf(stderr, "Failed to join lists.\n");
   }
   else
@@ -199,6 +285,8 @@ int main()
   }
 
   putchar('\n');
+
+  // Free the memory and end execution
   freeList_int(list1->head);
   free(list1);
   freeList_int(list2->head);
