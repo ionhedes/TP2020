@@ -171,7 +171,7 @@ static void findCurrentLeastPaid(Person * most_paid, Person * previous_least_pai
   DEB("\t\t - name: %s;\n", least_paid->name);
   DEB("\t\t - wage: %lf;\n", least_paid->wage);
 
-  printf("\t - person %d:\n\t\t - name:%s;\n\t\t - wage:%lf;\n",
+  printf("\t - person %d:\n\t\t - name: %s;\n\t\t - wage: %.2lf;\n",
          iteration_number + 1, least_paid->name, least_paid->wage);
 
   if (previous_least_paid &&
