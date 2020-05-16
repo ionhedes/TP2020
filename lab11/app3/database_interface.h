@@ -16,9 +16,9 @@ struct Person
 
 extern Person * database;
 
-int addPerson(char * name, char gender, double wage);
+int addPerson(char * name, const char gender, const double wage);
 
-int deletePerson(char * name);
+int deletePerson(const char * name);
 
 int existsPerson(const char * name);
 

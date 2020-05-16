@@ -3,7 +3,7 @@
 
 Person * database = NULL;
 
-static Person * newPerson(char * name, double wage, Person * next)
+static Person * newPerson(char * name, const double wage, Person * next)
 {
   Person * pers = (Person *)malloc(sizeof(Person));
   if (pers == NULL)
@@ -18,8 +18,9 @@ static Person * newPerson(char * name, double wage, Person * next)
   return pers;
 }
 
-int addPerson(char * name, double wage)
+int addPerson(char * name, const double wage)
 {
+  int return_value;
   Person * buffer = NULL;
   Person * previous = NULL;
   Person * current = NULL;
@@ -28,10 +29,16 @@ int addPerson(char * name, double wage)
   for (current = database; current; previous = current, current = current->next)
   {
     DEB("\t - current entry: %s;\n",current->name);
-    if (strcmp(current->name, name) >= 0)
+    return_value = strcmp(current->name, name);
+    if (return_value > 0)
     {
       DEB("\t\t - found the position, after the current name;\n");
       break;
+    }
+    else if (return_value == 0)
+    {
+      DEB("\t - the person is already listed inside the database;\n");
+      return 2;
     }
   }
   buffer = newPerson(name, wage, current);
@@ -54,7 +61,7 @@ int addPerson(char * name, double wage)
   return 1;
 }
 
-int deletePerson(char * name)
+int deletePerson(const char * name)
 {
   Person * previous = NULL;
   Person * current = NULL;
@@ -83,6 +90,24 @@ int deletePerson(char * name)
     }
   }
   DEB("The person was not found in the database;\n\n");
+  return 0;
+}
+
+int existsPerson(const char * name)
+{
+  Person * current = NULL;
+
+  DEB("Iterating the list, looking for the person with name %s...\n", name);
+  for (current = database; current; current = current->next)
+  {
+    DEB("\t - current entry: %s;\n", current->name);
+    if (!strcmp(name, current->name))
+    {
+      DEB("\t\t - found matching entry;\n");
+      return 1;
+    }
+  }
+  DEB("An entry with this name was not found;\n");
   return 0;
 }
 

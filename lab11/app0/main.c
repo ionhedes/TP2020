@@ -64,13 +64,20 @@ int main()
           MALLOC_COUNTER--;
           err("\t\t - failed to read the person's wage from the standard input.\n");
         }
-        if (!addPerson(buffer_name, buffer_wage))
+        return_value = addPerson(buffer_name, buffer_wage);
+        if (!return_value)
         {
           free(buffer_name);
           MALLOC_COUNTER -= 2;
           freeDatabase();
           OPENED_FILES_COUNTER--;
           err("\t - failed to add person to database from standard input;\n");
+        }
+        else if (return_value == 2)
+        {
+          free(buffer_name);
+          MALLOC_COUNTER--;
+          printf("The person is already listed inside the database;\n");
         }
         putchar('\n');
         break;
@@ -140,7 +147,6 @@ int main()
         err("Default case reached. Error. Freeing memory and aborting.\n");
       }
     }
-
   }
 
   return 0;

@@ -5,24 +5,7 @@
 Person * database = NULL;
 Person * printedList = NULL;
 
-/**static int wasPersonPrinted(const Person * person)
-{
-  const Person * current = NULL;
-  DEB("Iterating the list of people whose names have already been printed...\n");
-  for (current = printedList; current; current = current->next)
-  {
-    DEB("\t - current entry: %s;\n", current->name);
-    if (!strcmp(current->name, person->name))
-    {
-      DEB("The person was already printed;\n");
-      return 0;
-    }
-  }
-  DEB("The person was not printed yet, it is good to go;\n");
-  return 1;
-}*/
-
-static Person * newPerson(char * name, double wage, Person * next)
+static Person * newPerson(char * name, const double wage, Person * next)
 {
   Person * pers = (Person *)malloc(sizeof(Person));
   if (pers == NULL)
@@ -37,8 +20,9 @@ static Person * newPerson(char * name, double wage, Person * next)
   return pers;
 }
 
-int addPerson(char * name, double wage)
+int addPerson(char * name, const double wage)
 {
+  int return_value;
   Person * buffer = NULL;
   Person * previous = NULL;
   Person * current = NULL;
@@ -47,10 +31,16 @@ int addPerson(char * name, double wage)
   for (current = database; current; previous = current, current = current->next)
   {
     DEB("\t - current entry: %s;\n",current->name);
-    if (strcmp(current->name, name) >= 0)
+    return_value = strcmp(current->name, name);
+    if (return_value > 0)
     {
       DEB("\t\t - found the position, after the current name;\n");
       break;
+    }
+    else if (return_value == 0)
+    {
+      DEB("\t - the person is already listed inside the database;\n");
+      return 2;
     }
   }
   buffer = newPerson(name, wage, current);
@@ -73,7 +63,7 @@ int addPerson(char * name, double wage)
   return 1;
 }
 
-int deletePerson(char * name)
+int deletePerson(const char * name)
 {
   Person * previous = NULL;
   Person * current = NULL;
@@ -105,6 +95,24 @@ int deletePerson(char * name)
   return 0;
 }
 
+int existsPerson(const char * name)
+{
+  Person * current = NULL;
+
+  DEB("Iterating the list, looking for the person with name %s...\n", name);
+  for (current = database; current; current = current->next)
+  {
+    DEB("\t - current entry: %s;\n", current->name);
+    if (!strcmp(name, current->name))
+    {
+      DEB("\t\t - found matching entry;\n");
+      return 1;
+    }
+  }
+  DEB("An entry with this name was not found;\n");
+  return 0;
+}
+
 void printDatabase()
 {
   int counter = 0;
@@ -127,7 +135,7 @@ void printDatabase()
   putchar('\n');
 }
 
-static void findCurrentLeastPaid(Person * most_paid, Person * previous_least_paid, int iteration_number)
+static void findCurrentLeastPaid(const Person * most_paid, int iteration_number)
 {
   Person * current = database;
   Person * least_paid = database;
@@ -146,10 +154,10 @@ static void findCurrentLeastPaid(Person * most_paid, Person * previous_least_pai
   DEB("\t\t - name: %s;\n", least_paid->name);
   DEB("\t\t - wage: %lf;\n", least_paid->wage);
 
-  printf("\t - person %d:\n\t\t - name:%s;\n\t\t - wage:%lf;\n",
+  printf("\t - person %d:\n\t\t - name: %s;\n\t\t - wage: %.2lf;\n",
          iteration_number + 1, least_paid->name, least_paid->wage);
 
-  if (previous_least_paid &&
+  if (iteration_number &&
       most_paid->wage == least_paid->wage &&
       !strcmp(most_paid->name, least_paid->name))
   {
@@ -161,8 +169,7 @@ static void findCurrentLeastPaid(Person * most_paid, Person * previous_least_pai
     DEB("\t - setting the lowest wage to the biggest possible number, so we don't count it twice;\n");
     placeholder = least_paid->wage;
     least_paid->wage = DBL_MAX;
-    //DEB("\t\t - new value = %lf;\n", least_paid->wage);
-    findCurrentLeastPaid(most_paid, least_paid, iteration_number + 1);
+    findCurrentLeastPaid(most_paid, iteration_number + 1);
     least_paid->wage = placeholder;
     DEB("\t - the lowest wage of iteration %d was restored;\n", iteration_number + 1);
     DEB("Iteration %d ended;\n", iteration_number + 1);
@@ -190,8 +197,7 @@ void printOrderedByWage()
   DEB("\t - wage: %lf;\n", most_paid->wage);
   DEB("\n");
 
-  findCurrentLeastPaid(most_paid, NULL, 0);
-
+  findCurrentLeastPaid(most_paid, 0);
 }
 
 void freeDatabase()

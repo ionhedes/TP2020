@@ -1,9 +1,0 @@
-adrian flavia;138.900000
-costea ana;178.890000
-dumitru cristian;143.210000
-gabor calin;90.000000
-hedes ioan;23.450000
-pop renata;101.101000
-popescu andrei;45.678000
-statescu dragos;75.600000
-vasile florin;123.400000

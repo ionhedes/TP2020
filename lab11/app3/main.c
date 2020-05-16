@@ -81,6 +81,8 @@ int main()
         }
         else if (return_value == 2)
         {
+          free(buffer_name);
+          MALLOC_COUNTER--;
           printf("The person is already listed inside the database;\n");
         }
         putchar('\n');
@@ -225,7 +227,6 @@ int main()
         err("Default case reached. Error. Freeing memory and aborting.\n");
       }
     }
-
   }
 
   return 0;
