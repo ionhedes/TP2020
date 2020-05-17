@@ -5,6 +5,7 @@
 Person * database = NULL;
 Person * printedList = NULL;
 
+// Auxiliary static method for addPerson(), handling memory allocation of the entry;
 static Person * newPerson(char * name, const char gender, const double wage, Person * next)
 {
   Person * pers = (Person *)malloc(sizeof(Person));
@@ -137,12 +138,14 @@ void printDatabase()
   putchar('\n');
 }
 
+// Auxiliary static method for printOrderedByWage(), to find the next least paid person;
 static void findCurrentLeastPaid(const Person * most_paid, int iteration_number)
 {
   Person * current = database;
   Person * least_paid = database;
   double placeholder;
 
+  // Finding the globally most paid person;
   DEB("Iteration %d of list...\n", iteration_number + 1);
   DEB("\t - finding current minimum...\n");
   for (current = database->next; current; current = current->next)
@@ -159,8 +162,10 @@ static void findCurrentLeastPaid(const Person * most_paid, int iteration_number)
   printf("\t - person %d:\n\t\t - name: %s;\n\t\t - gender: %c;\n\t\t - wage: %.2lf;\n",
          iteration_number + 1, least_paid->name, least_paid->gender, least_paid->wage);
 
-  if (iteration_number &&
-      most_paid->wage == least_paid->wage &&
+  /** Stop conditions for the recursive call:
+      - the current least paid person is also the most paid person;
+  */
+  if (most_paid->wage == least_paid->wage &&
       !strcmp(most_paid->name, least_paid->name))
   {
     DEB("\t - all the people have been printed;\n");
@@ -168,11 +173,13 @@ static void findCurrentLeastPaid(const Person * most_paid, int iteration_number)
   }
   else
   {
+    // Setting the wage of a covered entry to a very high value, so it is not
+    // covered again in the next iterations;
     DEB("\t - setting the lowest wage to the biggest possible number, so we don't count it twice;\n");
-    placeholder = least_paid->wage;
+    placeholder = least_paid->wage; // < The original value of the wage is preserved;
     least_paid->wage = DBL_MAX;
     findCurrentLeastPaid(most_paid, iteration_number + 1);
-    least_paid->wage = placeholder;
+    least_paid->wage = placeholder; // < Value restored after the next iterations have ended;
     DEB("\t - the lowest wage of iteration %d was restored;\n", iteration_number + 1);
     DEB("Iteration %d ended;\n", iteration_number + 1);
   }
