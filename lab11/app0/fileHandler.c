@@ -46,6 +46,11 @@ int loadDatabase()
 
   while(!ferror(file))
   {
+    /** Every entry from the database file is read as a whole line, and then parsed;
+        - a line without a semicolon is considered invalid and is skipped;
+        - before the semicolon is the name of the person;
+        - after the semicolon, and before \0 is the wage of the person;
+    */
     if ((buffer_string = getString(file)) == NULL)
     {
       if (!feof(file))

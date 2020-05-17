@@ -3,6 +3,7 @@
 
 Person * database = NULL;
 
+// Auxiliary static method for addPerson(), handling memory allocation of the entry;
 static Person * newPerson(char * name, const double wage, Person * next)
 {
   Person * pers = (Person *)malloc(sizeof(Person));

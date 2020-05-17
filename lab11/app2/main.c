@@ -1,6 +1,7 @@
 #include "database_interface.h"
 #include "utils.h"
 
+// Generates nicely formatted menu;
 void generateMenu()
 {
   printf("-----MENU-----\n\n");
@@ -14,6 +15,7 @@ void generateMenu()
   printf("Enter your option: ");
 }
 
+// Driver program for database manipulation;
 int main()
 {
   int go_condition = 1;
@@ -24,6 +26,7 @@ int main()
 
   DEB("DEBUG mode is on. Compile without the -DDEBUG flag to turn it off;\n");
 
+  // If possible, when executing, load the database from the text file first;
   return_value = loadDatabase();
 
   if (return_value == -1)
@@ -38,6 +41,8 @@ int main()
     printf("so a new file is created and the database saved.\n\n");
   }
 
+  // Main loop - user inputs a number, and the actions on the corresponding case
+  // are executed;
   while (go_condition)
   {
     generateMenu();
@@ -201,6 +206,12 @@ int main()
         }
         else
         {
+          /** For safety reasons, if the database is emptied by the user, the text
+              file containing it is deleted from the disk;
+
+              The compilation of the following system command will give a warning,
+              but treating it is unnecessary for this program;
+          */
           system("test -f \"database.txt\" && rm database.txt");
         }
 
