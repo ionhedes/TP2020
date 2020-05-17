@@ -1,5 +1,5 @@
 #include "database_interface.h"
-#include "utils.h"
+#include "../dependencies/utils.h"
 
 Person * database = NULL;
 
