@@ -1,3 +1,9 @@
+/**
+  Aplicația 11.1: La exemplul din laborator să se adauge opțiunea de meniu
+                  “listeaza după salariu”, care va lista persoanele în ordinea
+                  crescătoare a salariului.
+*/
+
 #include "database_interface.h"
 #include "../dependencies/utils.h"
 

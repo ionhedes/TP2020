@@ -1,3 +1,5 @@
+// Main database manipulation program for the lab file;
+
 #include "database_interface.h"
 #include "../dependencies/utils.h"
 

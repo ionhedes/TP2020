@@ -1,3 +1,10 @@
+/**
+  Aplicația 11.3: La exemplul din laborator să se adauge câmpul ”sex” de tip
+                  char la structura Persoana, cu două valori: ‘m’ - masculin,
+                  ‘f’ - feminin. Se vor modifica funcțiile de adăugare, salvare,
+                  încărcare și listare pentru a opera și cu acest câmp.
+*/
+
 #include "database_interface.h"
 #include "../dependencies/utils.h"
 

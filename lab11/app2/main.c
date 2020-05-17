@@ -1,3 +1,11 @@
+/**
+  Aplicația 11.2: La exemplul din laborator să se adauge opțiunea de meniu
+                  “modifică”. Pentru aceasta se cere numele persoanei a cărei
+                  înregistrare va fi modificată, iar apoi se vor cere noul nume
+                  și salariu. Baza de date trebuie să rămână sortată alfabetic,
+                  chiar dacă noul nume diferă  de cel anterior.
+*/
+
 #include "database_interface.h"
 #include "../dependencies/utils.h"
 
