@@ -76,7 +76,7 @@ int deletePerson(const char * name);
     - on failure, person not found - 0;
 
   SIDE EFFECTS:
-    -
+    - no outside variables will be modified by this method;
 */
 int existsPerson(const char * name);
 
@@ -104,12 +104,12 @@ void printDatabase();
 */
 void printOrderedByWage();
 
-// Frees the dinamically assigned memroy blocks used by the database
+// Frees the dinamically assigned memroy blocks used by the database;
 // DROP TABLE *;
 void freeDatabase();
 
 // Saves the database to a text file on the disk and deletes it from memory;
 int saveDatabase();
 
-// Loads the database from a text file on the disk into memory
+// Loads the database from a text file on the disk into memory;
 int loadDatabase();
